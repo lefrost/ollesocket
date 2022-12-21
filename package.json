@@ -1,0 +1,34 @@
+{
+  "name": "ollesocket",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lefrst/ollesocket.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/lefrst/ollesocket/issues"
+  },
+  "homepage": "https://github.com/lefrst/ollesocket#readme",
+  "dependencies": {
+    "@discordjs/builders": "^1.4.0",
+    "@discordjs/rest": "^1.5.0",
+    "@supercharge/promise-pool": "^2.3.2",
+    "axios": "^1.2.1",
+    "crypto": "^1.0.1",
+    "discord-api-types": "^0.37.24",
+    "discord.js": "^14.7.1",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "lodash": "^4.17.21",
+    "moment": "^2.29.4",
+    "mongodb": "^3.6.10",
+    "socket.io": "^4.5.4"
+  }
+}
