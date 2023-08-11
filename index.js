@@ -214,33 +214,33 @@ io.on(`connection`, (socket) => {
 
   // space
 
-  socket.on(`space_enter`, async (d, callback) => {
-    try {
-      ioRefreshObjects();
+  // socket.on(`space_enter`, async (d, callback) => {
+  //   try {
+  //     ioRefreshObjects();
       
-      callback({});
-    } catch (e) {
-      console.log(e);
-    }
-  });
+  //     callback({});
+  //   } catch (e) {
+  //     console.log(e);
+  //   }
+  // });
 
-  socket.on(`space_add_object`, async (d, callback) => {
-    try {
-      await spaceAddObject(d);
-      callback({});
-    } catch (e) {
-      console.log(e);
-    }
-  });
+  // socket.on(`space_add_object`, async (d, callback) => {
+  //   try {
+  //     await spaceAddObject(d);
+  //     callback({});
+  //   } catch (e) {
+  //     console.log(e);
+  //   }
+  // });
 
-  socket.on(`space_edit_object`, async (d, callback) => {
-    try {
-      await spaceEditObject(d);
-      callback({});
-    } catch (e) {
-      console.log(e);
-    }
-  });
+  // socket.on(`space_edit_object`, async (d, callback) => {
+  //   try {
+  //     await spaceEditObject(d);
+  //     callback({});
+  //   } catch (e) {
+  //     console.log(e);
+  //   }
+  // });
 });
 
 // "space" funcs
