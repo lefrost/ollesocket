@@ -198,119 +198,119 @@ app.get(`/cache/:type`, async (req, res) => {
 
 // ---- discord bot
 
-let DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
-let DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID;
+// let DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
+// let DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID;
 
-const discord_intents = new IntentsBitField();
-discord_intents.add(
-  IntentsBitField.Flags.Guilds,
-  IntentsBitField.Flags.GuildMembers
-);
+// const discord_intents = new IntentsBitField();
+// discord_intents.add(
+//   IntentsBitField.Flags.Guilds,
+//   IntentsBitField.Flags.GuildMembers
+// );
 
-const discord_bot = new Client({
-  intents: discord_intents,
-  partials: [Partials.GuildMember],
-});
+// const discord_bot = new Client({
+//   intents: discord_intents,
+//   partials: [Partials.GuildMember],
+// });
 
-discord_bot.login(DISCORD_BOT_TOKEN);
+// discord_bot.login(DISCORD_BOT_TOKEN);
 
-discord_bot.once(`ready`, async () => {
-  console.log(`Discord bot ready`);
-  // processes.start({
-  //   name: `user`,
-  //   payload: {
-  //     client: discord_bot,
-  //   },
-  // });
-});
+// discord_bot.once(`ready`, async () => {
+//   console.log(`Discord bot ready`);
+//   // processes.start({
+//   //   name: `user`,
+//   //   payload: {
+//   //     client: discord_bot,
+//   //   },
+//   // });
+// });
 
-discord_bot.on(`interactionCreate`, async (interaction) => {
-  if (!interaction.isCommand()) return;
+// discord_bot.on(`interactionCreate`, async (interaction) => {
+//   if (!interaction.isCommand()) return;
 
-  // let errors = [];
-  let is_private_command = interaction.options.getBoolean(`private`);
+//   // let errors = [];
+//   let is_private_command = interaction.options.getBoolean(`private`);
 
-  const { commandName } = interaction;
-  switch (commandName) {
-    case `ping`: {
-      await interaction.reply(`pong!`);
-      break;
-    }
+//   const { commandName } = interaction;
+//   switch (commandName) {
+//     case `ping`: {
+//       await interaction.reply(`pong!`);
+//       break;
+//     }
 
-    case `user`: {
-      switch (interaction.options.getSubcommand()) {
-        case `view`: {
-          if (is_private_command === null) {
-            is_private_command = true;
-          }
+//     case `user`: {
+//       switch (interaction.options.getSubcommand()) {
+//         case `view`: {
+//           if (is_private_command === null) {
+//             is_private_command = true;
+//           }
 
-          let name = interaction.options.getString(`name`);
+//           let name = interaction.options.getString(`name`);
 
-          let embed = new EmbedBuilder()
-            .setColor(`#BAE8F9`)
-            .setAuthor({
-              name: `Test command`,
-              iconURL: `https://www.suave.la/images/commons/seal.gif`,
-              url: `https://ollesocket.vercel.app`,
-            })
-            .addFields([
-              {
-                name: `Viewing user`,
-                value: name,
-              },
-            ]);
+//           let embed = new EmbedBuilder()
+//             .setColor(`#BAE8F9`)
+//             .setAuthor({
+//               name: `Test command`,
+//               iconURL: ``,
+//               url: `https://ollesocket.vercel.app`,
+//             })
+//             .addFields([
+//               {
+//                 name: `Viewing user`,
+//                 value: name,
+//               },
+//             ]);
 
-          await interaction.reply({
-            embeds: [embed],
-            ephemeral: is_private_command,
-          });
+//           await interaction.reply({
+//             embeds: [embed],
+//             ephemeral: is_private_command,
+//           });
 
-          break;
-        }
-      }
+//           break;
+//         }
+//       }
 
-      break;
-    }
-  }
-});
+//       break;
+//     }
+//   }
+// });
 
-// ---- discord bot command config
+// // ---- discord bot command config
 
-const { SlashCommandBuilder } = require("@discordjs/builders");
-const { REST } = require("@discordjs/rest");
-const { Routes } = require("discord-api-types/v9");
+// const { SlashCommandBuilder } = require("@discordjs/builders");
+// const { REST } = require("@discordjs/rest");
+// const { Routes } = require("discord-api-types/v9");
 
-registerDiscordBotCommands();
+// registerDiscordBotCommands();
 
-function registerDiscordBotCommands() {
-  const commands = [
-    new SlashCommandBuilder().setName(`ping`).setDescription(`Ping the bot.`),
+// function registerDiscordBotCommands() {
+//   const commands = [
+//     new SlashCommandBuilder().setName(`ping`).setDescription(`Ping the bot.`),
 
-    new SlashCommandBuilder()
-      .setName(`user`)
-      .setDescription(`Your favourite portfolio tracker.`)
-      .addSubcommand((subcmd) =>
-        subcmd
-          .setName(`view`)
-          .setDescription(`View user.`)
-          .addStringOption((option) =>
-            option.setName(`name`).setDescription(`Name.`).setRequired(true)
-          )
-          .addBooleanOption((option) =>
-            option
-              .setName(`private`)
-              .setDescription(`Private query? True by default.`)
-              .setRequired(false)
-          )
-      ),
-  ].map((command) => command.toJSON());
+//     new SlashCommandBuilder()
+//       .setName(`user`)
+//       .setDescription(`Related to users.`)
+//       .addSubcommand((subcmd) =>
+//         subcmd
+//           .setName(`view`)
+//           .setDescription(`View user.`)
+//           .addStringOption((option) =>
+//             option.setName(`name`).setDescription(`Name.`).setRequired(true)
+//           )
+//           .addBooleanOption((option) =>
+//             option
+//               .setName(`private`)
+//               .setDescription(`Private query? True by default.`)
+//               .setRequired(false)
+//           )
+//       ),
+//   ].map((command) => command.toJSON());
 
-  const rest = new REST({ version: `9` }).setToken(DISCORD_BOT_TOKEN);
+//   const rest = new REST({ version: `9` }).setToken(DISCORD_BOT_TOKEN);
 
-  rest
-    .put(Routes.applicationCommands(DISCORD_CLIENT_ID), {
-      body: commands,
-    })
-    .then(() => console.log(`Successfully registered Discord bot commands.`))
-    .catch(console.error);
-}
+//   rest
+//     .put(Routes.applicationCommands(DISCORD_CLIENT_ID), {
+//       body: commands,
+//     })
+//     .then(() => console.log(`Successfully registered Discord bot commands.`))
+//     .catch(console.error);
+// }

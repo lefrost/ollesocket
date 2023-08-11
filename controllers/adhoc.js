@@ -2,6 +2,8 @@ let cache = require(`../utils/cache`);
 let dataflow = require(`./dataflow`);
 let util = require(`../utils/util`);
 
+// let category_name = require(`./adhoc/category_name`);
+
 module.exports = {
   load: async (d) => {
     return await load(d);
@@ -16,6 +18,11 @@ async function load(d) {
     switch (d.type) {
       // case `object`: {
       //   data = await loadObject(obj);
+      //   break;
+      // }
+      // case `category_name_foo`:
+      // case `category_name_bar`: {
+      //   data = await category_name.load(d);
       //   break;
       // }
       default: {

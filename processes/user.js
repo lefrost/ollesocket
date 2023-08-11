@@ -2,12 +2,11 @@ let cache = require(`../utils/cache`);
 let util = require(`../utils/util`);
 let dataflow = require(`../controllers/dataflow`);
 const { PromisePool } = require("@supercharge/promise-pool");
-let DISCORD_SERVER_ID = process.env.DISCORD_SERVER_ID;
-// let suave_collection_types = require(`../data/suave_collection_types.json`);
-// let suave_collections = require(`../data/suave_collections.json`);
+
+const DISCORD_SERVER_ID = process.env.DISCORD_SERVER_ID;
+const DISCORD_ROLE_ID = `discord_role_id_here`;
 
 let init = false;
-let users = [];
 
 module.exports = {
   init: () => {
@@ -24,26 +23,32 @@ module.exports = {
 //     let client = d.client;
 //     let guild = await client.guilds.fetch(DISCORD_SERVER_ID);
 //     let members = (await guild.members.fetch({ force: true })).map((m) => m);
-//     users = await getUsers();
+//     let users = await getUsers();
 //     let count = 0;
 
 //     if (users.length > 0) {
-//       await PromisePool.for(users)
-//         .withConcurrency(Math.min(users.length, 10))
+//       await PromisePool.for(members)
+//         .withConcurrency(Math.min(members.length, 10))
 //         .process(async (user) => {
-//           await processUser({ user });
+//           let matching_user = users.find(u => u.connections.some(c => c.type === `discord` && c.code === member.id));
+
+//           if (!matching_user) {
+//             if (member._roles.includes(DISCORD_ROLE_ID)) {
+//               member.roles.remove(DISCORD_ROLE_ID);
+//             }
+//           } else {
+//             if (true) {
+//               if (member._roles.includes(DISCORD_ROLE_ID)) {
+//                 member.roles.remove(DISCORD_ROLE_ID);
+//               }
+//             } else if (!member._roles.includes(DISCORD_ROLE_ID)) {
+//               member.roles.add(DISCORD_ROLE_ID);
+//             }
+//           }
+
 //           count++;
+//           console.log(`process members: ${count} / ${members.length}`);
 //         });
-
-//       users = await getUsers();
-
-//       for (let member of members) {
-//         let matching_user = await getUserOfMember({ member });
-//         if (matching_user) {
-//           count++;
-//         }
-//         // await updateMemberRoles({ member, user: matching_user });
-//       }
 
 //       console.log(init ? `users refreshed` : `users initiated`);
 //       init = true;
@@ -61,10 +66,4 @@ module.exports = {
 //   } finally {
 //     processUsers(d);
 //   }
-// }
-
-// async function processUser(d) {
-//   let user = d.user;
-
-//   //
 // }

@@ -25,6 +25,7 @@ async function get(d) {
 async function getUserStruct(d) {
   return {
     collection_name: `users`,
+    in_database: true,
     pullable_attributes: [],
   };
 }

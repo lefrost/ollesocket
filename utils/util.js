@@ -4,6 +4,7 @@
 
 var crypto = require("crypto");
 var moment = require(`moment`);
+var moment_tz = require(`moment-timezone`);
 // var _ = require(`lodash`);
 
 module.exports = {
@@ -15,14 +16,63 @@ module.exports = {
   getRandomNumber: (min, max) => {
     return Math.floor(Math.random() * (max - min + 1)) + min;
   },
+  getWeekdayOfTimestamp: (timestamp) => {
+    try {
+      let weekdays = [
+        `Monday`,
+        `Tuesday`,
+        `Wednesday`,
+        `Thursday`,
+        `Friday`,
+        `Saturday`,
+        `Sunday`,
+      ];
+      return weekdays[moment.unix(timestamp).isoWeekday() - 1];
+    } catch (e) {
+      console.log(e);
+      return ``;
+    }
+  },
   getTimestamp: () => {
     return moment.utc().unix();
   },
   convertToTimestamp: (input, format) => {
     return moment.utc(input, format).unix();
   },
+  datetimeToTimestamp: (d) => {
+    // new
+    try {
+      let datetime_timezone = d.datetime_timezone || `UTC`;
+      let datetime = d.datetime || ``;
+      
+      return Number(moment(datetime).tz(datetime_timezone).format(`X`));
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
+  },
+  timestampToDatetime: (d) => {
+    // new
+    try {
+      let timestamp = d.timestamp || 0;
+      let datetime_timezone = d.datetime_timezone || `UTC`;
+      let datetime_format = d.datetime_format || `YYYY-MM-DDTHH:mm`;
+      
+      return moment.tz(moment.unix(timestamp), datetime_timezone).format(datetime_format);
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
+  },
   formatTimestamp: (timestamp, format) => {
-    return moment.unix(timestamp).format(format);
+    return moment.unix(timestamp).utc().format(format);
+  },
+  formatDatetime: (datetime, format, timezone) => {
+    // deprecated
+    if (!timezone) {
+      timezone = `UTC`;
+    }
+    return moment_tz.utc(datetime).tz(timezone).format(format);
   },
   getTimestampDiff: (start, end, format) => {
     let diff = moment.duration(moment.unix(end).diff(moment.unix(start)));
@@ -31,6 +81,8 @@ module.exports = {
     switch (format) {
       case `days`:
         return diff.asDays();
+      case `hours`:
+        return diff.asHours();
       case `minutes`:
         return diff.asMinutes();
       case `seconds`:
@@ -155,10 +207,16 @@ module.exports = {
   },
 
   normaliseNum: (num) => {
-    if (num.toString().includes(`e`)) {
-      return Number(num.toLocaleString("fullwide", { useGrouping: false }));
-    } else {
-      return num;
+    try {
+      let num_string = num.toString();
+      if (num_string.includes(`e`)) {
+        return Number(num.toLocaleString("fullwide", { useGrouping: false }));
+      } else {
+        return num;
+      }
+    } catch (e) {
+      console.log(e);
+      return 0;
     }
   },
 
@@ -206,7 +264,11 @@ module.exports = {
   },
 
   calcValBeforePercChange: (val, perc_change) => {
-    return (val / (100 + perc_change)) * 100;
+    let val_before_perc_change = (val / (100 + perc_change)) * 100;
+    if (val_before_perc_change === Infinity) {
+      val_before_perc_change = val * 2;
+    }
+    return val_before_perc_change || 0;
   },
 
   formatAddress: (address) => {
@@ -217,4 +279,21 @@ module.exports = {
         )}`
       : ``;
   },
+
+  roundNum(num, decimals) {
+    try {
+      return +(Math.round(num + `e+${decimals || 0}`) + `e-${decimals || 0}`);
+    } catch (e) {
+      console.log(e);
+      return 0;
+    }
+  },
+
+  shuffleArray: (arr) => {
+    // https://stackoverflow.com/a/46545530/8919391
+    return arr
+      .map((value) => ({ value, sort: Math.random() }))
+      .sort((a, b) => a.sort - b.sort)
+      .map(({ value }) => value);
+  }
 };

@@ -28,9 +28,9 @@ async function get(d) {
 async function getUserStruct(d) {
   return {
     collection_name: `users`,
+    in_database: true,
     attributes: {
       editables: [`name`],
-      // editables: [`name`, `timezone`, `connections`],
       numerics: [],
       booleans: [],
     },

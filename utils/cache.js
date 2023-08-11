@@ -61,7 +61,7 @@ module.exports = {
 async function get(d) {
   try {
     let obj;
-    if (d.type && d.id) {
+    if (d.type && d.id !== null && d.id !== undefined) {
       obj = cache[`${d.type}-${d.id}`];
     } else {
       let objs = await getMany(d);
@@ -95,24 +95,39 @@ async function getMany(d) {
         let passed = true;
 
         for (let filter of d.filters) {
-          switch (filter.condition) {
-            // conditions: match, some
-            case `match`: {
-              // match options: non-case-sensitive
-              if (filter.options.includes(`non-case-sensitive`)) {
-                passed =
-                  _.get(item, filter.prop).toLowerCase() ===
-                  filter.value.toLowerCase();
-              } else {
-                passed = _.get(item, filter.prop) === filter.value;
+          if (
+            _.get(item, filter.prop) !== null &&
+            _.get(item, filter.prop) !== undefined
+          ) {
+            switch (filter.condition) {
+              // conditions: match, some
+              case `match`: {
+                // match options: non-case-sensitive
+                if (filter.options.includes(`non-case-sensitive`)) {
+                  passed =
+                    _.get(item, filter.prop).toLowerCase() ===
+                    filter.value.toLowerCase();
+                } else {
+                  passed = _.get(item, filter.prop) === filter.value;
+                }
+                break;
               }
-              break;
+              case `includes`: {
+                if (filter.options.includes(`non-case-sensitive`)) {
+                  passed = _.includes((_.get(item, filter.prop) || ``).toLowerCase().trim(), (filter.value || ``).toLowerCase().trim());
+                } else {
+                  passed = _.includes(_.get(item, filter.prop), filter.value);
+                }
+                break;
+              }
+              case `some`: {
+                // some options: ...
+                passed = _.some(_.get(item, filter.prop), filter.value);
+                break;
+              }
             }
-            case `some`: {
-              // some options: ...
-              passed = _.some(_.get(item, filter.prop), filter.value);
-              break;
-            }
+          } else {
+            passed = false;
           }
 
           if (!passed) {

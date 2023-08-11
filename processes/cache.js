@@ -26,7 +26,9 @@ async function refreshCache(d) {
 }
 
 async function refreshCachedItems() {
-  let keys = [`users`];
+  let keys = [
+    `users`,
+  ];
 
   for (let key of keys) {
     let objs = await mongo.getAll(key);
