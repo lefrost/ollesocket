@@ -34,12 +34,16 @@ module.exports = {
 
 async function get(d) {
   try {
-    return util.getRes({
-      res: `ok`,
-      act: `get`,
-      type: d.type,
-      data: await cache.get(d),
-    });
+    let obj = util.clone(await cache.get(d));
+
+    return d.all === false
+      ? obj
+      : util.getRes({
+          res: `ok`,
+          act: `get`,
+          type: d.type,
+          data: obj,
+        });
   } catch (e) {
     return util.getRes({ res: `no`, act: `get`, type: d.type, data: null });
   }
@@ -47,13 +51,26 @@ async function get(d) {
 
 async function getMany(d) {
   try {
-    return util.getRes({
-      res: `ok`,
-      act: `get_many`,
-      type: d.type,
-      data: await cache.getMany(d),
-    });
+    let objs = util.clone((await cache.getMany(d)) || []);
+    
+    if (d.skip && d.skip > 0) {
+      objs.splice(0, d.skip); // https://bobbyhadz.com/blog/javascript-remove-first-n-elements-from-array
+    }
+
+    if (d.count && d.count > 0) {
+      objs = objs.slice(0, d.count); // https://stackoverflow.com/a/34883171/8919391
+    }
+
+    return d.all === false
+      ? objs
+      : util.getRes({
+          res: `ok`,
+          act: `get_many`,
+          type: d.type,
+          data: objs,
+        });
   } catch (e) {
+    console.log(e);
     return util.getRes({
       res: `no`,
       act: `get_many`,
@@ -107,7 +124,7 @@ async function edit(d) {
       for (let key of Object.keys(d.obj)) {
         if (
           editable_data.attributes.editables.includes(key) &&
-          d.obj[key] !== null &&
+          // d.obj[key] !== null &&
           d.obj[key] !== undefined
         ) {
           if (editable_data.attributes.numerics.includes(key)) {
@@ -133,10 +150,17 @@ async function edit(d) {
           id: d.obj.id,
         });
       } else {
-        obj = {
+        let matching_obj = await cache.get({
+          type: d.type,
           id: d.obj.id,
-          ...edits,
-        };
+        });
+
+        if (!util.isEmptyObj(matching_obj)) {
+          obj = {
+            ...matching_obj,
+            ...edits,
+          };
+        }
       }
 
       await cache.set({ obj });
