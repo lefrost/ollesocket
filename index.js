@@ -2,6 +2,7 @@
 
 require(`dotenv`).config();
 const express = require(`express`);
+const compression = require(`compression`);
 const app = express();
 const {
   AttachmentBuilder,
@@ -19,10 +20,12 @@ let rest = require(`./utils/rest`);
 let util = require(`./utils/util`);
 
 let port = process.env.PORT || 3001;
+let API_KEY = process.env.API_KEY;
 
 // ---- app & server
 
 app.use(express.json({ limit: `50mb`, extended: true }));
+app.use(compression());
 
 const server = app.listen(port, async () => {
   console.log(`up on http://localhost:${port}`);
@@ -31,41 +34,66 @@ const server = app.listen(port, async () => {
   // processes.start({ name: `your_object_name`, payload: null });
 });
 
-// ---- cors config
-
-const auth_origins = [
-  `http://localhost:3000`,
-  `https://www.ollesocket.vercel.app`,
-  `https://ollesocket.vercel.app`,
-];
-
+// const { Server } = require(`socket.io`);
 const io = require(`socket.io`)(server, {
   cors: {
-    origin: auth_origins,
+    origin: [
+      `http://localhost:3000`,
+      `https://www.ollesocket.vercel.app`,
+      `https://ollesocket.vercel.app`,
+    ],
   },
 });
 
 app.use(function (req, res, next) {
+  let auth_origins = [
+    `http://localhost:3000`,
+    `https://www.ollesocket.vercel.app`,
+    `https://ollesocket.vercel.app`,
+  ];
+
+  // Website you wish to allow to connect
+  // res.setHeader("Access-Control-Allow-Origin", "*");
   let origin = req.headers.origin;
-  if (auth_origins.includes(origin)) {
-    res.setHeader(`Access-Control-Allow-Origin`, origin);
+  if (
+    auth_origins.includes(origin) &&
+    (util.isEmptyObj(req.body) || req.body.api_key === API_KEY)
+  ) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
   }
+  // Request methods you wish to allow
   res.setHeader(
-    `Access-Control-Allow-Methods`,
-    `GET, POST, OPTIONS, PUT, PATCH, DELETE`
+    "Access-Control-Allow-Methods",
+    "GET, POST, OPTIONS, PUT, PATCH, DELETE"
   );
+  // Request headers you wish to allow
   res.setHeader(
-    `Access-Control-Allow-Headers`,
-    `X-Requested-With,content-type`
+    "Access-Control-Allow-Headers",
+    "X-Requested-With,content-type"
   );
-  res.setHeader(`Access-Control-Allow-Credentials`, true);
+  // Set to true if you need the website to include cookies in the requests sent to the API (e.g. in case you use sessions)
+  res.setHeader("Access-Control-Allow-Credentials", true);
+  // Pass to next layer of middleware
   next();
 });
 
-// ---- socket routes
+app.get(`/`, (req, res) => {
+  res.send(`Ollesocket API`);
+});
 
 io.on(`connection`, (socket) => {
+  /*
+    post routes
+    - /get {id, type, filters!}
+    - /get_many {type, filters}
+    - /add {obj, type}
+    - /edit {obj, type}
+    - /del {id, type}
+    - /pull {obj, type}
+  */
+
   socket.on(`init`, async (d, callback) => {
+    // console.log(`init`);
     callback(
       await util.getRes({
         res: `ok`,
@@ -75,6 +103,18 @@ io.on(`connection`, (socket) => {
       })
     );
   });
+
+  // socket.on(`connect`, async (d, callback) => {
+  //   // { user_id, page_code }
+  //   // io.emit(`connect`, d);
+  //   // callback(
+  //   //   process.init().cache ?
+  //   // )
+
+  //   if (process.init().cache) {
+  //     io.emit(`connect_res`, await dataflow.add(d));
+  //   }
+  // });
 
   // socket.on(`new_instance`, async (d, callback) => {
   //   if (processes.init().cache) {
@@ -97,11 +137,20 @@ io.on(`connection`, (socket) => {
       callback(util.getWaitCacheRes());
     } else {
       if (d.is_cache_request && !util.isEmptyObj(d.cache_get_params)) {
+        // console.log(`------------------- initial data`);
+        // console.log(d);
+
         let cache_obj = await dataflow.get(d.cache_get_params);
 
         callback(cache_obj);
 
+        // console.log(`------------------- cache obj`);
+        // console.log(cache_obj);
+
         let updated_obj = await adhoc.load(d);
+
+        // console.log(`------------------- load params`);
+        // console.log(d);
 
         if (!util.isEmptyObj(updated_obj)) {
           await dataflow.add({
@@ -110,6 +159,12 @@ io.on(`connection`, (socket) => {
           });
 
           cache_obj = await dataflow.get(d.cache_get_params);
+
+          // console.log(`------------------- updated obj`);
+          // console.log(updated_obj);
+
+          // console.log(`------------------- new cache obj`);
+          // console.log(cache_obj);
 
           socket.emit(`new_load_${d.type}`, cache_obj);
         }
@@ -156,12 +211,127 @@ io.on(`connection`, (socket) => {
       processes.init().cache ? await dataflow.pull(d) : util.getWaitCacheRes()
     );
   });
+
+  // space
+
+  socket.on(`space_enter`, async (d, callback) => {
+    try {
+      ioRefreshObjects();
+      
+      callback({});
+    } catch (e) {
+      console.log(e);
+    }
+  });
+
+  socket.on(`space_add_object`, async (d, callback) => {
+    try {
+      await spaceAddObject(d);
+      callback({});
+    } catch (e) {
+      console.log(e);
+    }
+  });
+
+  socket.on(`space_edit_object`, async (d, callback) => {
+    try {
+      await spaceEditObject(d);
+      callback({});
+    } catch (e) {
+      console.log(e);
+    }
+  });
 });
 
-// ---- rest post routes
+// "space" funcs
 
-app.post(`/init`, async (req, res) => {
-  res.send(
+// async function spaceAddObject(d) {
+//   try {
+//     let matching_object = await dataflow.get({
+//       all: false,
+//       type: `object`,
+//       id: d.object_id || ``,
+//     });
+
+//     if (matching_object) {
+//       await dataflow.add({
+//         type: `object`,
+//         obj: {
+//           //
+//         },
+//       });
+      
+//       ioRefreshObjects();
+//     }
+//   } catch (e) {
+//     console.log(e);
+//   }
+// }
+
+// async function spaceEditObject(d) {
+//   try {
+//     let matching_object = await dataflow.get({
+//       all: false,
+//       type: `object`,
+//       id: d.object_id || ``,
+//     });
+
+//     if (matching_object) {
+//       await dataflow.edit({
+//         type: `object`,
+//         obj: {
+//           // 
+//         },
+//       });
+      
+//       ioRefreshObjects();
+//     } else {
+//       await spaceAddObj(d);
+//     }
+//   } catch (e) {
+//     console.log(e);
+//   }
+// }
+
+// io emits
+
+// async function ioRefreshObjects() {
+//   let objects = await dataflow.getMany({
+//     all: false,
+//     type: `object`,
+//     filters: [],
+//   });
+  
+//   io.emit(`refresh_objects`, {
+//     objects,
+//   });
+// }
+
+// io refresh
+
+// initIoObjectRefresh();
+
+// async function initIoObjectRefresh() {
+//   try {
+//     await util.wait(30);
+
+//     if (processes.init().cache) {
+//       ioRefreshObjects();
+//       console.log(`executed io refresh - object`) 
+//     } else {
+//       console.log(`unable to execute io refresh - object (cache not initiated). trying again in 30 seconds.`)
+//     }
+//   } catch (e) {
+//     console.log(e);
+//   } finally {
+//     initIoObjectRefresh();
+//   }
+// }
+
+// rest
+
+app.post(`/init`, async (fe, api) => {
+  api.send(
     await util.getRes({
       res: `ok`,
       act: `get`,
@@ -171,17 +341,65 @@ app.post(`/init`, async (req, res) => {
   );
 });
 
+app.post(`/get`, async (fe, api) => {
+  api.send(
+    processes.init().cache
+      ? await dataflow.get(fe.body)
+      : util.getWaitCacheRes()
+  );
+});
+
+app.post(`/get_many`, async (fe, api) => {
+  api.send(
+    processes.init().cache
+      ? await dataflow.getMany(fe.body)
+      : util.getWaitCacheRes()
+  );
+});
+
+app.post(`/add`, async (fe, api) => {
+  api.send(
+    processes.init().cache
+      ? await dataflow.add(fe.body)
+      : util.getWaitCacheRes()
+  );
+});
+
+app.post(`/edit`, async (fe, api) => {
+  api.send(
+    processes.init().cache
+      ? await dataflow.edit(fe.body)
+      : util.getWaitCacheRes()
+  );
+});
+
+app.post(`/del`, async (fe, api) => {
+  api.send(
+    processes.init().cache
+      ? await dataflow.del(fe.body)
+      : util.getWaitCacheRes()
+  );
+});
+
+app.post(`/pull`, async (fe, api) => {
+  api.send(
+    processes.init().cache
+      ? await dataflow.pull(fe.body)
+      : util.getWaitCacheRes()
+  );
+});
+
 app.post(`/load`, async (req, res) => {
   res.send(
     processes.init().cache ? await adhoc.load(req.body) : util.getWaitCacheRes()
   );
 });
 
-// ---- rest get routes
+// get routes
 
-app.get(`/`, (req, res) => {
-  res.send(`Ollesocket API`);
-});
+// app.get(`/`, (req, res) => {
+//   res.send(`Suave API`);
+// });
 
 app.get(`/cache/:type`, async (req, res) => {
   res.send(
