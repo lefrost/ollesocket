@@ -296,15 +296,19 @@ io.on(`connection`, (socket) => {
 // io emits
 
 // async function ioRefreshObjects() {
-//   let objects = await dataflow.getMany({
-//     all: false,
-//     type: `object`,
-//     filters: [],
-//   });
-  
-//   io.emit(`refresh_objects`, {
-//     objects,
-//   });
+//   try {
+//     let objects = await dataflow.getMany({
+//       all: false,
+//       type: `object`,
+//       filters: [],
+//     });
+    
+//     io.emit(`refresh_objects`, {
+//       objects,
+//     });
+//   } catch (e) {
+//     console.log(e);
+//   }
 // }
 
 // io refresh
