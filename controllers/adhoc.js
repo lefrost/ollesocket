@@ -22,7 +22,7 @@ async function load(d) {
       // }
       // case `category_name_foo`:
       // case `category_name_bar`: {
-      //   data = await category_name.load(d);
+      //   data = await category_name.load(obj);
       //   break;
       // }
       default: {
