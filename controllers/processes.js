@@ -16,12 +16,12 @@ module.exports = {
     switch (name) {
       case `cache`: {
         console.log(`initiated process: cache`);
-        cache_process.start(payload);
+        await cache_process.start(payload);
         break;
       }
       case `user`: {
         console.log(`initiated process: user`);
-        user_process.start(payload);
+        await user_process.start(payload);
         break;
       }
       default: {
