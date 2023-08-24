@@ -14,7 +14,13 @@ module.exports = {
   },
 
   start: async (d) => {
-    // processUsers(d);
+    // await processUsers(d);
+
+    // while (!init) {
+    //   await util.wait(5);
+    // }
+
+    // return;
   },
 };
 

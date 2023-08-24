@@ -11,6 +11,12 @@ module.exports = {
 
   start: async (d) => {
     refreshCache(d);
+
+    while (!init) {
+      await util.wait(5);
+    }
+
+    return;
   },
 };
 
