@@ -32,10 +32,27 @@ module.exports = {
 //     let users = await getUsers();
 //     let count = 0;
 
-//     if (users.length > 0) {
+//     if (users.length >= 0) {
+//       await PromisePool.for(users)
+//         .withConcurrency(Math.min(users.length, 5))
+//         .process(async (user) => {
+//           try {
+//             // tba: process user
+//           } catch (e) {
+//             console.log(e);
+//           } finally {
+//             count++;
+//             console.log(`process kairo users: ${count} / ${users.length}`);
+//           }
+//       });
+//     }
+        
+//     count = 0;
+
+//     if (members.length > 0) {
 //       await PromisePool.for(members)
 //         .withConcurrency(Math.min(members.length, 10))
-//         .process(async (user) => {
+//         .process(async (member) => {
 //           let matching_user = users.find(u => u.connections.some(c => c.type === `discord` && c.code === member.id));
 
 //           if (!matching_user) {
@@ -43,12 +60,12 @@ module.exports = {
 //               member.roles.remove(DISCORD_ROLE_ID);
 //             }
 //           } else {
-//             if (true) {
-//               if (member._roles.includes(DISCORD_ROLE_ID)) {
-//                 member.roles.remove(DISCORD_ROLE_ID);
+//             if (true) { // tba: if `user is obligated to role`
+//               if (!member._roles.includes(DISCORD_ROLE_ID)) {
+//                 member.roles.add(DISCORD_ROLE_ID);
 //               }
-//             } else if (!member._roles.includes(DISCORD_ROLE_ID)) {
-//               member.roles.add(DISCORD_ROLE_ID);
+//             } else if (member._roles.includes(DISCORD_ROLE_ID)) {
+//               member.roles.remove(DISCORD_ROLE_ID);
 //             }
 //           }
 
