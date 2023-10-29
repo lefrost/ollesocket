@@ -13,6 +13,12 @@ module.exports = {
     let name = d.name;
     let payload = d.payload;
 
+    while (!cache_process.init()) {
+      console.log(`waiting another 10s before initiating process ${name}, due to cache not being loaded yet`);
+      
+      await util.wait(10);
+    }
+
     switch (name) {
       case `cache`: {
         console.log(`initiated process: cache`);
