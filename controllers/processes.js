@@ -1,3 +1,5 @@
+let util = require(`../utils/util`);
+
 let cache_process = require(`../processes/cache`);
 let user_process = require(`../processes/user`);
 
@@ -13,7 +15,7 @@ module.exports = {
     let name = d.name;
     let payload = d.payload;
 
-    while (!cache_process.init()) {
+    while (!cache_process.init() && (name !== `cache`)) {
       console.log(`waiting another 10s before initiating process ${name}, due to cache not being loaded yet`);
       
       await util.wait(10);
