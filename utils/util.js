@@ -198,6 +198,14 @@ module.exports = {
     return JSON.parse(JSON.stringify(obj));
   },
 
+  sanitiseString: (str) => {
+    try {
+      return (str || ``).trim().toLowerCase().replaceAll(` `, ``);
+    } catch (e) {
+      console.log(e);
+    }
+  },
+
   urlifyString: (str) => {
     return str.replaceAll(`&`, `[ampersand]`);
   },
