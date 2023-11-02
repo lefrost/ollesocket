@@ -85,8 +85,8 @@ module.exports = {
 //     }
 //   } catch (e) {
 //     console.log(e);
-//     await util.wait(10);
 //   } finally {
+//     await util.wait(10);
 //     processUsers(d);
 //   }
 // }
