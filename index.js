@@ -22,6 +22,9 @@ let util = require(`./utils/util`);
 let port = process.env.PORT || 3001;
 let API_KEY = process.env.API_KEY;
 
+let jobs = [];
+let maintenance_timestamp = null;
+
 // ---- app & server
 
 app.use(express.json({ limit: `50mb`, extended: true }));
@@ -332,6 +335,34 @@ io.on(`connection`, (socket) => {
 //   }
 // }
 
+// maintenance io emits
+
+async function ioRefreshMaintenanceTimestamp(d) {
+  try {
+    io.emit(`refresh_maintenance_timestamp`, {
+      maintenance_timestamp,
+    });
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+// maintenance io refresh
+
+initIoMaintenanceRefresh();
+
+async function initIoMaintenanceRefresh() {
+  try {
+    await util.wait(30);
+
+    ioRefreshMaintenanceTimestamp();
+  } catch (e) {
+    console.log(e);
+  } finally {
+    initIoMaintenanceRefresh();
+  }
+}
+
 // rest
 
 app.post(`/init`, async (fe, api) => {
@@ -397,6 +428,71 @@ app.post(`/load`, async (req, res) => {
   res.send(
     processes.init().cache ? await adhoc.load(req.body) : util.getWaitCacheRes()
   );
+});
+
+// maintenace timestamp
+
+app.post(`/get_maintenance_timestamp`, async (req, res) => {
+  res.send({
+    data: maintenance_timestamp || null
+  });
+});
+
+app.get(`/get_maintenance_timestamp`, async (req, res) => {
+  try {
+    let key = req.query.key || ``;
+    
+    if (key !== API_KEY) {
+      res.send({
+        data: `wrong key`
+      });
+    } else {
+      res.send({
+        data: maintenance_timestamp || null
+      }); 
+    }
+  } catch (e) {
+    console.log(e);
+
+    res.send({
+      data: `error`
+    });
+  }
+});
+
+app.get(`/set_maintenance_timestamp`, async (req, res) => {
+  try {
+    let key = req.query.key || ``;
+    let t_mins = req.query.t_mins || `empty`;
+
+    if (key !== API_KEY) {
+      res.send({
+        data: `wrong key`
+      });
+    } else if (t_mins === `empty`) {
+      maintenance_timestamp = null;
+
+      res.send({
+        data: `done - set to empty (null)`
+      });
+    } else if (Number(t_mins) === NaN) {
+      res.send({
+        data: `error - NaN`
+      });
+    } else {
+      maintenance_timestamp = util.alterTimestamp(`add`, t_mins || 1, `minutes`, util.getTimestamp());
+
+      res.send({
+        data: `done - set to ${maintenance_timestamp}`
+      });
+    }
+  } catch (e) {
+    console.log(e);
+
+    res.send({
+      data: `error`
+    });
+  }
 });
 
 // get routes
