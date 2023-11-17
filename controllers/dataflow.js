@@ -128,9 +128,9 @@ async function edit(d) {
           d.obj[key] !== undefined
         ) {
           if (editable_data.attributes.numerics.includes(key)) {
-            edits[key] = Number(d.obj[key]);
+            edits[key] = (d.obj[key] === null) ? null : Number(d.obj[key]);
           } else if (editable_data.attributes.booleans.includes(key)) {
-            edits[key] = Boolean(d.obj[key]);
+            edits[key] = (d.obj[key] === null) ? null : Boolean(d.obj[key]);
           } else {
             edits[key] = d.obj[key];
           }

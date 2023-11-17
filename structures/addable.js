@@ -29,7 +29,7 @@ async function getUserStruct(d) {
   //   username: d.username || id.substring(0, 10),
   //   timezone: d.timezone || ``,
   //   connections: d.connections || [],
-  //   metadata: {
+  //   metadata: d.metadata || {
   //     type: `user`,
   //     create_timestamp: util.getTimestamp(),
   //   },
@@ -37,6 +37,10 @@ async function getUserStruct(d) {
   let obj = {
     id,
     name: d.name || id.substring(0, 10),
+    metadata: d.metadata || {
+      type: `user`,
+      create_timestamp: util.getTimestamp(),
+    }
   };
 
   return {
