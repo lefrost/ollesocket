@@ -23,30 +23,35 @@ async function get(d) {
 }
 
 async function getUserStruct(d) {
-  let id = util.generateId(20);
-  // let obj = {
-  //   id: d.id || id,
-  //   username: d.username || id.substring(0, 10),
-  //   timezone: d.timezone || ``,
-  //   connections: d.connections || [],
-  //   metadata: d.metadata || {
-  //     type: `user`,
-  //     create_timestamp: util.getTimestamp(),
-  //   },
-  // };
-  let obj = {
-    id: d.id || id,
-    name: d.name || id.substring(0, 10),
-    metadata: d.metadata || {
-      type: `user`,
-      create_timestamp: util.getTimestamp(),
+  try {
+    let id = util.generateId(20);
+    // let obj = {
+    //   id: d.id || id,
+    //   code: d.code || id.substring(0, 10),
+    //   timezone: d.timezone || ``,
+    //   connections: d.connections || [],
+    //   metadata: d.metadata || {
+    //     type: `user`,
+    //     create_timestamp: util.getTimestamp(),
+    //   },
+    // }
+    let obj = {
+      id: d.id || id,
+      code: d.code || id.substring(0, 10),
+      metadata: d.metadata || {
+        type: `user`,
+        create_timestamp: util.getTimestamp(),
+      }
     }
-  };
-
-  return {
-    collection_name: `users`,
-    in_database: true,
-    pullable: false,
-    obj
-  };
+  
+    return {
+      collection_name: `users`,
+      in_database: true,
+      pullable: false,
+      obj
+    }
+  } catch (e) {
+    console.log(e);
+    return null;
+  }
 }

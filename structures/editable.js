@@ -26,13 +26,18 @@ async function get(d) {
   }
 }
 async function getUserStruct(d) {
-  return {
-    collection_name: `users`,
-    in_database: true,
-    attributes: {
-      editables: [`name`],
-      numerics: [],
-      booleans: [],
-    },
-  };
+  try {
+    return {
+      collection_name: `users`,
+      in_database: true,
+      attributes: {
+        editables: [`name`],
+        numerics: [],
+        booleans: [],
+      },
+    }
+  } catch (e) {
+    console.log(e);
+    return null;
+  }
 }
