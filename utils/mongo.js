@@ -15,7 +15,7 @@ module.exports = {
   getAll: async (collection_name) => {
     let data = (
       await client
-        .db(API_TYPE === `dev` ? `olleatlas-dev` : `olleatlas`)
+        .db(API_TYPE === `dev` ? `ollesocket-dev` : `ollesocket`)
         .collection(collection_name)
         .find()
         .toArray()
@@ -48,7 +48,7 @@ module.exports = {
     }
 
     await client
-      .db(API_TYPE === `dev` ? `olleatlas-dev` : `olleatlas`)
+      .db(API_TYPE === `dev` ? `ollesocket-dev` : `ollesocket`)
       .collection(collectionName)
       .find(params, {
         sort: sorters,
@@ -72,7 +72,7 @@ module.exports = {
 
   getOne: async (collectionName, params) => {
     let data = await client
-      .db(API_TYPE === `dev` ? `olleatlas-dev` : `olleatlas`)
+      .db(API_TYPE === `dev` ? `ollesocket-dev` : `ollesocket`)
       .collection(collectionName)
       .findOne(params, { collation: { locale: `en`, strength: 2 } });
 
@@ -87,7 +87,7 @@ module.exports = {
     let responseCode = 503;
     try {
       await client
-        .db(API_TYPE === `dev` ? `olleatlas-dev` : `olleatlas`)
+        .db(API_TYPE === `dev` ? `ollesocket-dev` : `ollesocket`)
         .collection(collectionName)
         .insertOne(obj);
       responseCode = 201;
@@ -100,7 +100,7 @@ module.exports = {
     let responseCode = 503;
     try {
       await client
-        .db(API_TYPE === `dev` ? `olleatlas-dev` : `olleatlas`)
+        .db(API_TYPE === `dev` ? `ollesocket-dev` : `ollesocket`)
         .collection(collectionName)
         .updateOne(idObj, setObj);
       responseCode = 200;
@@ -114,7 +114,7 @@ module.exports = {
 
     try {
       await client
-        .db(API_TYPE === `dev` ? `olleatlas-dev` : `olleatlas`)
+        .db(API_TYPE === `dev` ? `ollesocket-dev` : `ollesocket`)
         .collection(collectionName)
         .deleteOne(idObj);
       responseCode = 200;
@@ -128,7 +128,7 @@ module.exports = {
 
     try {
       await client
-        .db(API_TYPE === `dev` ? `olleatlas-dev` : `olleatlas`)
+        .db(API_TYPE === `dev` ? `ollesocket-dev` : `ollesocket`)
         .collection(collectionName)
         .deleteMany(idObj);
       responseCode = 200;
@@ -142,7 +142,7 @@ module.exports = {
 
     try {
       await client
-        .db(API_TYPE === `dev` ? `olleatlas-dev` : `olleatlas`)
+        .db(API_TYPE === `dev` ? `ollesocket-dev` : `ollesocket`)
         .collection(collectionName)
         .remove();
       responseCode = 200;
@@ -156,7 +156,7 @@ module.exports = {
 
     try {
       count = await client
-        .db(API_TYPE === `dev` ? `olleatlas-dev` : `olleatlas`)
+        .db(API_TYPE === `dev` ? `ollesocket-dev` : `ollesocket`)
         .collection(collectionName)
         .find(params, {
           collation: { locale: `en`, strength: 2 },

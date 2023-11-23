@@ -25,7 +25,7 @@ async function get(d) {
 async function getUserStruct(d) {
   let id = util.generateId(20);
   // let obj = {
-  //   id,
+  //   id: d.id || id,
   //   username: d.username || id.substring(0, 10),
   //   timezone: d.timezone || ``,
   //   connections: d.connections || [],
@@ -35,7 +35,7 @@ async function getUserStruct(d) {
   //   },
   // };
   let obj = {
-    id,
+    id: d.id || id,
     name: d.name || id.substring(0, 10),
     metadata: d.metadata || {
       type: `user`,
