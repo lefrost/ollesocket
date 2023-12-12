@@ -366,7 +366,8 @@ async function initIoMaintenanceRefresh() {
 // rest
 
 app.post(`/init`, async (fe, api) => {
-  api.send(
+  if (fe.body.api_key !== API_KEY) api.send({error: `Unauthorised.`});
+  else api.send(
     await util.getRes({
       res: `ok`,
       act: `get`,
@@ -377,7 +378,8 @@ app.post(`/init`, async (fe, api) => {
 });
 
 app.post(`/get`, async (fe, api) => {
-  api.send(
+  if (fe.body.api_key !== API_KEY) api.send({error: `Unauthorised.`});
+  else api.send(
     processes.init().cache
       ? await dataflow.get(fe.body)
       : util.getWaitCacheRes()
@@ -385,7 +387,8 @@ app.post(`/get`, async (fe, api) => {
 });
 
 app.post(`/get_many`, async (fe, api) => {
-  api.send(
+  if (fe.body.api_key !== API_KEY) api.send({error: `Unauthorised.`});
+  else api.send(
     processes.init().cache
       ? await dataflow.getMany(fe.body)
       : util.getWaitCacheRes()
@@ -393,7 +396,8 @@ app.post(`/get_many`, async (fe, api) => {
 });
 
 app.post(`/add`, async (fe, api) => {
-  api.send(
+  if (fe.body.api_key !== API_KEY) api.send({error: `Unauthorised.`});
+  else api.send(
     processes.init().cache
       ? await dataflow.add(fe.body)
       : util.getWaitCacheRes()
@@ -401,7 +405,8 @@ app.post(`/add`, async (fe, api) => {
 });
 
 app.post(`/edit`, async (fe, api) => {
-  api.send(
+  if (fe.body.api_key !== API_KEY) api.send({error: `Unauthorised.`});
+  else api.send(
     processes.init().cache
       ? await dataflow.edit(fe.body)
       : util.getWaitCacheRes()
@@ -409,7 +414,8 @@ app.post(`/edit`, async (fe, api) => {
 });
 
 app.post(`/del`, async (fe, api) => {
-  api.send(
+  if (fe.body.api_key !== API_KEY) api.send({error: `Unauthorised.`});
+  else api.send(
     processes.init().cache
       ? await dataflow.del(fe.body)
       : util.getWaitCacheRes()
@@ -417,79 +423,82 @@ app.post(`/del`, async (fe, api) => {
 });
 
 app.post(`/pull`, async (fe, api) => {
-  api.send(
+  if (fe.body.api_key !== API_KEY) api.send({error: `Unauthorised.`});
+  else api.send(
     processes.init().cache
       ? await dataflow.pull(fe.body)
       : util.getWaitCacheRes()
   );
 });
 
-app.post(`/load`, async (req, res) => {
-  res.send(
-    processes.init().cache ? await adhoc.load(req.body) : util.getWaitCacheRes()
+app.post(`/load`, async (fe, api) => {
+  if (fe.body.api_key !== API_KEY) api.send({error: `Unauthorised.`});
+  else api.send(
+    processes.init().cache ? await adhoc.load(fe.body) : util.getWaitCacheRes()
   );
 });
 
 // maintenace timestamp
 
-app.post(`/get_maintenance_timestamp`, async (req, res) => {
-  res.send({
+app.post(`/get_maintenance_timestamp`, async (fe, api) => {
+  if (fe.body.api_key !== API_KEY) api.send({error: `Unauthorised.`});
+  else api.send({
     data: maintenance_timestamp || null
   });
 });
 
-app.get(`/get_maintenance_timestamp`, async (req, res) => {
+app.get(`/get_maintenance_timestamp`, async (fe, api) => {
   try {
-    let key = req.query.key || ``;
+    let key = fe.query.key || ``;
     
     if (key !== API_KEY) {
-      res.send({
+      api.send({
         data: `wrong key`
       });
     } else {
-      res.send({
+      api.send({
         data: maintenance_timestamp || null
       }); 
     }
   } catch (e) {
     console.log(e);
 
-    res.send({
+    api.send({
       data: `error`
     });
   }
 });
 
-app.get(`/set_maintenance_timestamp`, async (req, res) => {
+app.get(`/set_maintenance_timestamp`, async (fe, api) => {
   try {
-    let key = req.query.key || ``;
-    let t_mins = req.query.t_mins || `empty`;
+    let key = fe.query.key || ``;
+    let t_mins = fe.query.t_mins || `empty`;
 
     if (key !== API_KEY) {
-      res.send({
+      api.send({
         data: `wrong key`
       });
     } else if (t_mins === `empty`) {
       maintenance_timestamp = null;
 
-      res.send({
+      api.send({
         data: `done - set to empty (null)`
       });
     } else if (Number(t_mins) === NaN) {
-      res.send({
+      api.send({
         data: `error - NaN`
       });
     } else {
       maintenance_timestamp = util.alterTimestamp(`add`, t_mins || 1, `minutes`, util.getTimestamp());
 
-      res.send({
+      api.send({
         data: `done - set to ${maintenance_timestamp}`
       });
     }
   } catch (e) {
     console.log(e);
 
-    res.send({
+    api.send({
       data: `error`
     });
   }
@@ -501,14 +510,14 @@ app.get(`/set_maintenance_timestamp`, async (req, res) => {
 //   res.send(`Suave API`);
 // });
 
-app.get(`/cache/:type`, async (req, res) => {
-  res.send(
-    await cache.getMany({
-      type: req.params.type,
-      filters: [],
-    })
-  );
-});
+// app.get(`/cache/:type`, async (req, res) => {
+//   res.send(
+//     await cache.getMany({
+//       type: req.params.type,
+//       filters: [],
+//     })
+//   );
+// });
 
 // app.get(`/test`, async (req, res) => {
 //   //
