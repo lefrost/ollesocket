@@ -270,6 +270,20 @@ module.exports = {
       sort_direction: body.sort_direction || `ascending`,
     };
   },
+  
+  calcPercChange: (a, b) => {
+    let perc_change;
+    if (b !== 0) {
+      if (a !== 0) {
+        perc_change = (b - a) / a * 100;
+      } else {
+        perc_change = b * 100;
+      }
+    } else {
+      perc_change = - a * 100;            
+    }       
+    return Number(perc_change.toFixed(2));
+  },
 
   calcValBeforePercChange: (val, perc_change) => {
     let val_before_perc_change = (val / (100 + perc_change)) * 100;
