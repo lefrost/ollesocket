@@ -29,7 +29,8 @@ async function getUserStruct(d) {
     //   id: d.id || id,
     //   code: d.code || id.substring(0, 10),
     //   timezone: d.timezone || ``,
-    //   connections: d.connections || [],
+    //   connections: d.connections || [], // [{type<`discord`, `solana`, `suave`, ...>, code, name}]
+    //   settings: d.settings || {}, // {...}
     //   metadata: d.metadata || {
     //     type: `user`,
     //     create_timestamp: util.getTimestamp(),
