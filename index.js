@@ -33,8 +33,8 @@ app.use(compression());
 const server = app.listen(port, async () => {
   console.log(`up on http://localhost:${port}`);
   await mongo.connect();
-  await processes.start({ name: `cache`, payload: null }); // note: await cache proces before any others
-  // processes.start({ name: `your_object_name`, payload: null });
+  await processes.start({ name: `cache`, payload: {} }); // note: await cache proces before any others
+  // processes.start({ name: `your_object_name`, payload: { /*...*/ } });
 });
 
 // const { Server } = require(`socket.io`);
