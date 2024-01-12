@@ -203,6 +203,7 @@ module.exports = {
       return (str || ``).trim().toLowerCase().replaceAll(` `, ``);
     } catch (e) {
       console.log(e);
+      return ``;
     }
   },
 
