@@ -25,23 +25,35 @@ async function get(d) {
 async function getUserStruct(d) {
   try {
     let id = util.generateId(20);
+
     // let obj = {
     //   id: d.id || id,
     //   code: d.code || id.substring(0, 10),
+    //   name: d.name || ``,
+    //   icon_image_url: d.icon_image_url || ``,
     //   timezone: d.timezone || ``,
     //   connections: d.connections || [], // [{type<`discord`, `solana`, `suave`, ...>, code, name}]
+    //   nft_cxs: d.nft_cxs || [], // [{code, nfts[{addy, wallet_addy, name, image_url, metadata_url}]]
+    //   servers: d.servers || [], // [{id, type<`admin`, `staff`, `member`, `none`>}]
     //   settings: d.settings || {}, // {...}
     //   metadata: d.metadata || {
     //     type: `user`,
     //     create_timestamp: util.getTimestamp(),
-    //   },
+    //     status: `active`,
+    //     issues: [],
+    //     flags: [],
+    //   }
     // }
+
     let obj = {
       id: d.id || id,
       code: d.code || id.substring(0, 10),
       metadata: d.metadata || {
         type: `user`,
         create_timestamp: util.getTimestamp(),
+        status: `active`,
+        issues: [],
+        flags: [],
       }
     }
   

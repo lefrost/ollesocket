@@ -63,6 +63,13 @@ async function get(d) {
     let obj;
     if (d.type && d.id !== null && d.id !== undefined) {
       obj = cache[`${d.type}-${d.id}`];
+      
+      if (
+        (d.include_inactive !== true) &&
+        (obj.metadata || {}).type !== `active`
+      ) {
+        obj = null;
+      }
     } else {
       let objs = await getMany(d);
       if (objs.length > 0) {
@@ -87,6 +94,15 @@ async function getMany(d) {
         options: [],
       },
     ];
+    
+    if (d.include_inactive !== true) {
+      d.filters.push({
+        prop: `metadata.status`,
+        value: `active`,
+        condition: `some`,
+        options: []
+      });
+    }
 
     return Object.keys(cache)
       .filter((k) => k.startsWith(`${d.type}-`))
