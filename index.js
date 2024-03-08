@@ -60,7 +60,7 @@ app.use(function (req, res, next) {
   let origin = req.headers.origin;
   if (
     auth_origins.includes(origin) &&
-    (util.isEmptyObj(req.body) || req.body.api_key === API_KEY)
+    (util.isEmptyObj(req.body) || req.headers.x_api_key === API_KEY)
   ) {
     res.setHeader("Access-Control-Allow-Origin", origin);
   }
@@ -72,7 +72,7 @@ app.use(function (req, res, next) {
   // Request headers you wish to allow
   res.setHeader(
     "Access-Control-Allow-Headers",
-    "X-Requested-With,content-type"
+    "X-Requested-With,content-type,x_api_key"
   );
   // Set to true if you need the website to include cookies in the requests sent to the API (e.g. in case you use sessions)
   res.setHeader("Access-Control-Allow-Credentials", true);
@@ -96,8 +96,8 @@ io.on(`connection`, (socket) => {
   */
 
   socket.on(`init`, async (d, callback) => {
-    // console.log(`init`);
-    callback(
+    if (socket.handshake.headers.x_api_key !== API_KEY) callback({error: `Unauthorised.`});
+    else callback(
       await util.getRes({
         res: `ok`,
         act: `get`,
@@ -136,7 +136,8 @@ io.on(`connection`, (socket) => {
   // });
 
   socket.on(`load`, async (d, callback) => {
-    if (!processes.init().cache) {
+    if (socket.handshake.headers.x_api_key !== API_KEY) callback({error: `Unauthorised.`});
+    else if (!processes.init().cache) {
       callback(util.getWaitCacheRes());
     } else {
       if (d.is_cache_request && !util.isEmptyObj(d.cache_get_params)) {
@@ -178,13 +179,15 @@ io.on(`connection`, (socket) => {
   });
 
   socket.on(`get`, async (d, callback) => {
-    callback(
+    if (socket.handshake.headers.x_api_key !== API_KEY) callback({error: `Unauthorised.`});
+    else callback(
       processes.init().cache ? await dataflow.get(d) : util.getWaitCacheRes()
     );
   });
 
   socket.on(`get_many`, async (d, callback) => {
-    callback(
+    if (socket.handshake.headers.x_api_key !== API_KEY) callback({error: `Unauthorised.`});
+    else callback(
       processes.init().cache
         ? await dataflow.getMany(d)
         : util.getWaitCacheRes()
@@ -192,25 +195,29 @@ io.on(`connection`, (socket) => {
   });
 
   socket.on(`add`, async (d, callback) => {
-    callback(
+    if (socket.handshake.headers.x_api_key !== API_KEY) callback({error: `Unauthorised.`});
+    else callback(
       processes.init().cache ? await dataflow.add(d) : util.getWaitCacheRes()
     );
   });
 
   socket.on(`edit`, async (d, callback) => {
-    callback(
+    if (socket.handshake.headers.x_api_key !== API_KEY) callback({error: `Unauthorised.`});
+    else callback(
       processes.init().cache ? await dataflow.edit(d) : util.getWaitCacheRes()
     );
   });
 
   socket.on(`del`, async (d, callback) => {
-    callback(
+    if (socket.handshake.headers.x_api_key !== API_KEY) callback({error: `Unauthorised.`});
+    else callback(
       processes.init().cache ? await dataflow.del(d) : util.getWaitCacheRes()
     );
   });
 
   socket.on(`pull`, async (d, callback) => {
-    callback(
+    if (socket.handshake.headers.x_api_key !== API_KEY) callback({error: `Unauthorised.`});
+    else callback(
       processes.init().cache ? await dataflow.pull(d) : util.getWaitCacheRes()
     );
   });
@@ -366,7 +373,7 @@ async function initIoMaintenanceRefresh() {
 // rest
 
 app.post(`/init`, async (fe, api) => {
-  if (fe.body.api_key !== API_KEY) api.send({error: `Unauthorised.`});
+  if (fe.headers.x_api_key !== API_KEY) api.send({error: `Unauthorised.`});
   else api.send(
     await util.getRes({
       res: `ok`,
@@ -378,7 +385,7 @@ app.post(`/init`, async (fe, api) => {
 });
 
 app.post(`/get`, async (fe, api) => {
-  if (fe.body.api_key !== API_KEY) api.send({error: `Unauthorised.`});
+  if (fe.headers.x_api_key !== API_KEY) api.send({error: `Unauthorised.`});
   else api.send(
     processes.init().cache
       ? await dataflow.get(fe.body)
@@ -387,7 +394,7 @@ app.post(`/get`, async (fe, api) => {
 });
 
 app.post(`/get_many`, async (fe, api) => {
-  if (fe.body.api_key !== API_KEY) api.send({error: `Unauthorised.`});
+  if (fe.headers.x_api_key !== API_KEY) api.send({error: `Unauthorised.`});
   else api.send(
     processes.init().cache
       ? await dataflow.getMany(fe.body)
@@ -396,7 +403,7 @@ app.post(`/get_many`, async (fe, api) => {
 });
 
 app.post(`/add`, async (fe, api) => {
-  if (fe.body.api_key !== API_KEY) api.send({error: `Unauthorised.`});
+  if (fe.headers.x_api_key !== API_KEY) api.send({error: `Unauthorised.`});
   else api.send(
     processes.init().cache
       ? await dataflow.add(fe.body)
@@ -405,7 +412,7 @@ app.post(`/add`, async (fe, api) => {
 });
 
 app.post(`/edit`, async (fe, api) => {
-  if (fe.body.api_key !== API_KEY) api.send({error: `Unauthorised.`});
+  if (fe.headers.x_api_key !== API_KEY) api.send({error: `Unauthorised.`});
   else api.send(
     processes.init().cache
       ? await dataflow.edit(fe.body)
@@ -414,7 +421,7 @@ app.post(`/edit`, async (fe, api) => {
 });
 
 app.post(`/del`, async (fe, api) => {
-  if (fe.body.api_key !== API_KEY) api.send({error: `Unauthorised.`});
+  if (fe.headers.x_api_key !== API_KEY) api.send({error: `Unauthorised.`});
   else api.send(
     processes.init().cache
       ? await dataflow.del(fe.body)
@@ -423,7 +430,7 @@ app.post(`/del`, async (fe, api) => {
 });
 
 app.post(`/pull`, async (fe, api) => {
-  if (fe.body.api_key !== API_KEY) api.send({error: `Unauthorised.`});
+  if (fe.headers.x_api_key !== API_KEY) api.send({error: `Unauthorised.`});
   else api.send(
     processes.init().cache
       ? await dataflow.pull(fe.body)
@@ -432,7 +439,7 @@ app.post(`/pull`, async (fe, api) => {
 });
 
 app.post(`/load`, async (fe, api) => {
-  if (fe.body.api_key !== API_KEY) api.send({error: `Unauthorised.`});
+  if (fe.headers.x_api_key !== API_KEY) api.send({error: `Unauthorised.`});
   else api.send(
     processes.init().cache ? await adhoc.load(fe.body) : util.getWaitCacheRes()
   );
@@ -441,7 +448,7 @@ app.post(`/load`, async (fe, api) => {
 // maintenace timestamp
 
 app.post(`/get_maintenance_timestamp`, async (fe, api) => {
-  if (fe.body.api_key !== API_KEY) api.send({error: `Unauthorised.`});
+  if (fe.headers.x_api_key !== API_KEY) api.send({error: `Unauthorised.`});
   else api.send({
     data: maintenance_timestamp || null
   });
@@ -510,14 +517,15 @@ app.get(`/set_maintenance_timestamp`, async (fe, api) => {
 //   res.send(`Suave API`);
 // });
 
-// app.get(`/cache/:type`, async (req, res) => {
-//   res.send(
-//     await cache.getMany({
-//       type: req.params.type,
-//       filters: [],
-//     })
-//   );
-// });
+app.get(`/cache/:type`, async (fe, api) => {
+  if (fe.headers.x_api_key !== API_KEY) api.send({error: `Unauthorised.`});
+  else api.send(
+    await cache.getMany({
+      type: fe.params.type,
+      filters: [],
+    })
+  );
+});
 
 // app.get(`/test`, async (req, res) => {
 //   //
