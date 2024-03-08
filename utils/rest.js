@@ -22,18 +22,23 @@ module.exports = {
 
   post: async (d) => {
     try {
-      let headers = d.headers || {};
-      let payload = d.payload || {};
-      // if (d.url.includes(OLLESOCKET_API_URL)) {
-      //   payload.api_key = OLLESOCKET_API_KEY;
-      // }
-      let res = null;
+      let api_key = ``;
 
-      if (headers) {
-        res = (await axios.post(d.url || ``, payload, { headers }));
-      } else {
-        res = (await axios.post(d.url || ``, payload));
+      // if (d.url.includes(OLLESOCKET_API_URL)) {
+      //   api_key = OLLESOCKET_API_KEY;
+      // }
+
+      let config_obj = {}
+
+      if (api_key) {
+        config_obj[`x_api_key`] = api_key || ``;
       }
+
+      let res = await axios.post(
+        d.url || ``,
+        d.payload || {},
+        config_obj || {}
+      );
 
       return d.all ? res : res.data;
     } catch (e) {
