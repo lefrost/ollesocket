@@ -27,17 +27,19 @@ module.exports = {
       // if (d.url.includes(OLLESOCKET_API_URL)) {
       //   api_key = OLLESOCKET_API_KEY;
       // }
-
-      let config_obj = {}
+      
+      let headers_obj = {}
 
       if (api_key) {
-        config_obj[`x_api_key`] = api_key || ``;
+        headers_obj[`x_api_key`] = api_key || ``;
       }
 
       let res = await axios.post(
         d.url || ``,
         d.payload || {},
-        config_obj || {}
+        {
+          headers: headers_obj || {}
+        }
       );
 
       return d.all ? res : res.data;
