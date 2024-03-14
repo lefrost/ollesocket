@@ -99,7 +99,7 @@ async function getMany(d) {
       d.filters.push({
         prop: `metadata.status`,
         value: `active`,
-        condition: `some`,
+        condition: `match`,
         options: []
       });
     }
