@@ -518,13 +518,20 @@ app.get(`/set_maintenance_timestamp`, async (fe, api) => {
 // });
 
 app.get(`/cache/:type`, async (fe, api) => {
-  if (fe.headers.x_api_key !== API_KEY) api.send({error: `Unauthorised.`});
-  else api.send(
-    await cache.getMany({
-      type: fe.params.type,
-      filters: [],
-    })
-  );
+  let key = fe.query.key || ``;
+  
+  if (key !== API_KEY) {
+    api.send({
+      data: `wrong key`
+    });
+  } else {
+    api.send(
+      await cache.getMany({
+        type: fe.params.type,
+        filters: [],
+      })
+    );
+  }
 });
 
 // app.get(`/test`, async (req, res) => {
