@@ -66,7 +66,7 @@ async function get(d) {
       
       if (
         (d.include_inactive !== true) &&
-        (obj.metadata || {}).type !== `active`
+        ((obj.metadata || {}).status !== `active`)
       ) {
         obj = null;
       }
