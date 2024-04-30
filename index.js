@@ -558,13 +558,31 @@ app.get(`/cache/:type`, async (fe, api) => {
 
 // discord_bot.once(`ready`, async () => {
 //   console.log(`Discord bot ready`);
-//   // processes.start({
-//   //   name: `user`,
-//   //   payload: {
-//   //     client: discord_bot,
-//   //   },
-//   // });
+//   startDiscordBoundProcesses();
 // });
+
+
+// async function startDiscordBoundProcesses() {
+//   try {
+//     if (cache_initiated) {
+//       while (!processes.init().cache) {
+//         await util.wait(5);
+//       }
+//       // processes.start({
+//       //   name: `your_object_name`,
+//       //   payload: {
+//       //     client: discord_bot,
+//       //   },
+//       // });
+
+//     } else {
+//       await util.wait(5);
+//       startDiscordBoundProcesses();
+//     }
+//   } catch (e) {
+//     console.log(e);
+//   }
+// }
 
 // discord_bot.on(`interactionCreate`, async (interaction) => {
 //   if (!interaction.isCommand()) return;
