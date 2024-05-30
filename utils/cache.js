@@ -65,8 +65,11 @@ async function get(d) {
       obj = cache[`${d.type}-${d.id}`];
       
       if (
-        (d.include_inactive !== true) &&
-        ((obj.metadata || {}).status !== `active`)
+        !(obj && obj.id) ||
+        (
+          (d.include_inactive !== true) &&
+          ((obj.metadata || {}).status !== `active`)
+        )
       ) {
         obj = null;
       }
