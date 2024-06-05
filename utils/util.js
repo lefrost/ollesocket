@@ -195,7 +195,12 @@ module.exports = {
   },
 
   clone: (obj) => {
-    return JSON.parse(JSON.stringify(obj));
+    try {
+      return JSON.parse(JSON.stringify(obj));
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
   },
 
   sanitiseString: (str) => {
