@@ -32,7 +32,8 @@ async function getUserStruct(d) {
     //   name: d.name || ``,
     //   icon_image_url: d.icon_image_url || ``,
     //   timezone: d.timezone || ``,
-    //   connections: d.connections || [], // [{type<`discord`, `solana`, `suave`, ...>, code, name}]
+    //   connections: d.connections || [], // [{type<`google`, `discord`, `solana`, `suave`, ...>, code, name}]
+    //   subscriptions: d.subscriptions || [], // [{stripe_customer_id, stripe_price_id, stripe_product_id}]
     //   nft_cxs: d.nft_cxs || [], // [{code, nfts[{addy, wallet_addy, name, image_url, metadata_url}]]
     //   servers: d.servers || [], // [{id, type<`admin`, `staff`, `member`, `none`>}]
     //   settings: d.settings || {}, // {...}

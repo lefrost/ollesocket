@@ -568,13 +568,17 @@ app.get(`/cache/:type`, async (fe, api) => {
 //       while (!processes.init().cache) {
 //         await util.wait(5);
 //       }
-//       // processes.start({
-//       //   name: `your_object_name`,
-//       //   payload: {
-//       //     client: discord_bot,
-//       //   },
-//       // });
 
+//       processes.start({ name: `user`, payload: { discord_client: discord_bot } });
+
+//       // processes.start({ name: `your_object_name`, payload: { discord_client: discord_bot } });
+
+//       // while (!(processes.init()[`your_object_name`])) {
+//       //   await util.wait(5);
+//       // }
+
+//       // // note: `another_object_name` process relies on `your_object_name` process(es)
+//       // processes.start({ name: `another_object_name`, payload: { discord_client: discord_bot } });
 //     } else {
 //       await util.wait(5);
 //       startDiscordBoundProcesses();

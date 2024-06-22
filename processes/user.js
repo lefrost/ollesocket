@@ -14,79 +14,74 @@ module.exports = {
   },
 
   start: async (d) => {
-    // await processUsers(d);
+    await processUsers(d);
 
-    // while (!init) {
-    //   await util.wait(5);
-    // }
+    while (!init) {
+      await util.wait(5);
+    }
 
-    // return;
+    return;
   },
 };
 
-// async function processUsers(d) {
-//   try {
-//     let client = d.client;
-//     let guild = await client.guilds.fetch(DISCORD_SERVER_ID);
-//     let members = (await guild.members.fetch({ force: true })).map((m) => m);
-//     let users = await getUsers();
-//     let count = 0;
+async function processUsers(d) {
+  try {
+    // let discord_client = d.discord_client;
+    // let guild = await discord_client.guilds.fetch(DISCORD_SERVER_ID);
+    // let members = (await guild.members.fetch({ force: true })).map((m) => m);
+    // let users = await getUsers();
+    // let count = 0;
 
-//     if (users.length >= 0) {
-//       await PromisePool.for(users)
-//         .withConcurrency(Math.min(users.length, 5))
-//         .process(async (user) => {
-//           try {
-//             // tba: process user
-//           } catch (e) {
-//             console.log(e);
-//           } finally {
-//             count++;
-//             console.log(`process kairo users: ${count} / ${users.length}`);
-//           }
-//       });
-//     }
+    // if (users.length >= 0) {
+    //   await PromisePool.for(users)
+    //     .withConcurrency(Math.min(users.length, 5))
+    //     .process(async (user) => {
+    //       try {
+    //         // todo: process user --- add dupe check, check accounts with matching emails for dupes, prioritise newest dupe, move all unadded user.connections and user.subscriptions from older dupes to newest dupe, remove older dupes
+    //       } catch (e) {
+    //         console.log(e);
+    //       } finally {
+    //         count++;
+    //         console.log(`process users: ${count} / ${users.length}`);
+    //       }
+    //   });
+    // }
         
-//     count = 0;
+    // count = 0;
 
-//     if (members.length > 0) {
-//       await PromisePool.for(members)
-//         .withConcurrency(Math.min(members.length, 10))
-//         .process(async (member) => {
-//           let matching_user = users.find(u => u.connections.some(c => c.type === `discord` && c.code === member.id));
+    // if (members.length > 0) {
+    //   await PromisePool.for(members)
+    //     .withConcurrency(Math.min(members.length, 10))
+    //     .process(async (member) => {
+    //       let matching_user = users.find(u => u.connections.some(c => c.type === `discord` && c.code === member.id));
 
-//           if (!matching_user) {
-//             if (member._roles.includes(DISCORD_ROLE_ID)) {
-//               member.roles.remove(DISCORD_ROLE_ID);
-//             }
-//           } else {
-//             if (true) { // tba: if `user is obligated to role`
-//               if (!member._roles.includes(DISCORD_ROLE_ID)) {
-//                 member.roles.add(DISCORD_ROLE_ID);
-//               }
-//             } else if (member._roles.includes(DISCORD_ROLE_ID)) {
-//               member.roles.remove(DISCORD_ROLE_ID);
-//             }
-//           }
+    //       if (!matching_user) {
+    //         if (member._roles.includes(DISCORD_ROLE_ID)) {
+    //           member.roles.remove(DISCORD_ROLE_ID);
+    //         }
+    //       } else {
+    //         if (true) { // tba: if `user is obligated to role`
+    //           if (!member._roles.includes(DISCORD_ROLE_ID)) {
+    //             member.roles.add(DISCORD_ROLE_ID);
+    //           }
+    //         } else if (member._roles.includes(DISCORD_ROLE_ID)) {
+    //           member.roles.remove(DISCORD_ROLE_ID);
+    //         }
+    //       }
 
-//           count++;
-//           console.log(`process members: ${count} / ${members.length}`);
-//         });
+    //       count++;
+    //       console.log(`process members: ${count} / ${members.length}`);
+    //     });
+    // }
+    
+    console.log(init ? `users refreshed` : `users initiated`);
+    init = true;
 
-//       console.log(init ? `users refreshed` : `users initiated`);
-//       init = true;
-
-//       await util.wait(60);
-//     } else {
-//       console.log(
-//         `process user - users cache not initiated yet. trying again in 10 seconds.`
-//       );
-//       await util.wait(10);
-//     }
-//   } catch (e) {
-//     console.log(e);
-//   } finally {
-//     await util.wait(10);
-//     processUsers(d);
-//   }
-// }
+    await util.wait(60);
+  } catch (e) {
+    console.log(e);
+  } finally {
+    await util.wait(10);
+    processUsers(d);
+  }
+}
