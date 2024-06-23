@@ -7,6 +7,8 @@ var moment = require(`moment`);
 var moment_tz = require(`moment-timezone`);
 // var _ = require(`lodash`);
 
+const ITEM_TYPES = require(`../data/item_types.json`);
+
 module.exports = {
   generateId: (length) => {
     return crypto
