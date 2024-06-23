@@ -26,6 +26,8 @@ module.exports = {
 
 async function processUsers(d) {
   try {
+    // tba: add utils->gcloud.js import and code for deleting any user.metadata.prev_gcloud_image_urls from gcloud->project->bucket, then wiping user.metadata.prev_gcloud_image_urls clean in mongo
+
     // let discord_client = d.discord_client;
     // let guild = await discord_client.guilds.fetch(DISCORD_SERVER_ID);
     // let members = (await guild.members.fetch({ force: true })).map((m) => m);
@@ -60,7 +62,7 @@ async function processUsers(d) {
     //           member.roles.remove(DISCORD_ROLE_ID);
     //         }
     //       } else {
-    //         if (true) { // tba: if `user is obligated to role`
+    //         if (true) { // todo: if `user is obligated to role`
     //           if (!member._roles.includes(DISCORD_ROLE_ID)) {
     //             member.roles.add(DISCORD_ROLE_ID);
     //           }

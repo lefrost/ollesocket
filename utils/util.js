@@ -323,5 +323,43 @@ module.exports = {
       .map((value) => ({ value, sort: Math.random() }))
       .sort((a, b) => a.sort - b.sort)
       .map(({ value }) => value);
+  },
+
+  getStructMetadataObj: (type, timestamp) => {
+    try {
+      return {
+        type: type || ``,
+        create_timestamp: timestamp || module.exports.getTimestamp(),
+        status: `active`,
+        issues: [],
+        flags: [],
+        prev_gcloud_image_urls: []
+      }
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
+  },
+
+  mapItem: (type, item, arrays, options) => {
+    try {
+      // note: used to map items from adhoc for processing and/or sending to frontend
+      // note: arrays is retrieved from adhoc->getMapArrays()
+      // note: options{...}
+
+      let mapped_item = util.clone(item);
+
+      switch (type) {
+        case `user`: {
+          // tba: map user
+          break;
+        }
+      }
+
+      return mapped_item || null;
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
   }
 };

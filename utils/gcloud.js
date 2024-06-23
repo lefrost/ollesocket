@@ -1,0 +1,3 @@
+// tba: env (eg. GCLOUD_PROJECT_ID, GCLOUD_BUCKET_ID) and code (eg. import from "@google-cloud/storage") setup for connecting to googlecloud --- implement similar one-time connect() function to utils->mongo.connect()
+
+// references: upload image to gcloud->project->bucket - https://dev.to/kamalhossain/upload-file-to-google-cloud-storage-from-nodejs-server-5cdg --- del image from gcloud->project->bucket - https://stackoverflow.com/a/53298761/8919391

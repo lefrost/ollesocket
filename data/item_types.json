@@ -1,0 +1,12 @@
+[
+  {
+    "code": "user",
+    "plural_code": "users",
+    "name": "User",
+    "flags": [],
+    "colour": "white",
+    "ident_prop": "id",
+    "search_props": [],
+    "roles": []
+  }
+]
