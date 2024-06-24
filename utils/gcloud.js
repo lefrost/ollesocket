@@ -1,8 +1,8 @@
-// tba: env (eg. GCLOUD_PROJECT_ID, GCLOUD_BUCKET_ID) and code (eg. import from "@google-cloud/storage") setup for connecting to googlecloud --- implement similar one-time connect() function to utils->mongo.connect()
+// tba (gcloud): env (eg. GCLOUD_PROJECT_ID, GCLOUD_BUCKET_ID) and code (eg. import from "@google-cloud/storage") setup for connecting to googlecloud --- implement similar one-time connect() function to utils->mongo.connect()
 
-// tba: uploadImage(image_obj, name) used in adhoc->addUser()/editUser()
+// tba (gcloud): uploadImage(image_obj, name) used in adhoc->addUser()/editUser()
 
-// tba: delImage(image_url) used in processes->user.js when processing `user.metadata.prev_gcloud_image_urls`
+// tba (gcloud): delImage(image_url) used in processes->user.js when processing `user.metadata.prev_gcloud_image_urls`
 
 /* references:
   - setup gcloud and prelim for upload image to gcloud->project->bucket - https://dev.to/kamalhossain/upload-file-to-google-cloud-storage-from-nodejs-server-5cdg

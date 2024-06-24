@@ -353,7 +353,7 @@ module.exports = {
 
       switch (type) {
         case `user`: {
-          // tba: map user
+          // tba (misc): map user
           break;
         }
       }

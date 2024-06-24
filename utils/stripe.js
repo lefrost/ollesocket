@@ -1,7 +1,7 @@
 
-// tba: env (eg. STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET) and code (eg. import from "stripe") setup for connecting to stripe
+// tba (stripe): env (eg. STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET) and code (eg. import from "stripe") setup for connecting to stripe
 
-// tba: parseEvent(req), to handle stripe POST webhook events (eg. `checkout.session.completed`) coming from index.js->`/stripe`
+// tba (stripe): parseEvent(req), to handle stripe POST webhook events (eg. `checkout.session.completed`) coming from index.js->`/stripe`
 
 /* references:
   - setup stripe in nodejs: https://docs.stripe.com/webhooks/quickstart?lang=node

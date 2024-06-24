@@ -26,7 +26,7 @@ module.exports = {
 
 async function processUsers(d) {
   try {
-    // tba: add utils->gcloud.js import and code for deleting any user.metadata.prev_gcloud_image_urls from gcloud->project->bucket, then wiping user.metadata.prev_gcloud_image_urls clean in mongo
+    // tba (misc): process any user.metadata.prev_gcloud_image_urls and exec utils->gcloud.delImage() calls, then wiping user.metadata.prev_gcloud_image_urls clean in mongo
 
     // let discord_client = d.discord_client;
     // let guild = await discord_client.guilds.fetch(DISCORD_SERVER_ID);

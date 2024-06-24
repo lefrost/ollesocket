@@ -6,7 +6,7 @@ const ITEM_TYPES = require(`../data/item_types.json`);
 
 // let category_name = require(`./adhoc/category_name`);
 
-// tba: addUser() and editUser() adhoc functions that replace `add/edit:user` calls in the frontend --- this is so that during these add/edit processes, backend functions can be executed, such as uploading user's icon image to google cloud, retrieving the resulting image url, and setting that image url in mongodb --- also add utils->gcloud.js import
+// tba (misc): addUser() and editUser() adhoc functions that replace `add/edit:user` calls in the frontend --- this is so that during these add/edit processes, backend functions can be executed, such as uploading user's icon image to google cloud, retrieving the resulting image url, and setting that image url in mongodb --- also add utils->gcloud.js import
 
 module.exports = {
   load: async (d) => {
