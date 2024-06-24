@@ -1,6 +1,7 @@
 // config
 
 require(`dotenv`).config();
+
 const express = require(`express`);
 const compression = require(`compression`);
 const app = express();
@@ -11,6 +12,7 @@ const {
   Partials,
   IntentsBitField,
 } = require(`discord.js`);
+
 let adhoc = require(`./controllers/adhoc`);
 let dataflow = require(`./controllers/dataflow`);
 let processes = require(`./controllers/processes`);
@@ -443,6 +445,21 @@ app.post(`/load`, async (fe, api) => {
   else api.send(
     processes.init().cache ? await adhoc.load(fe.body) : util.getWaitCacheRes()
   );
+});
+
+app.post(`/stripe`, async (fe, api) => {
+  try {
+    // tba: set up stripe webhook from stripe's dashboard --- call utils->stripe.parseEvent(fe) --- see stripe.js "references" notes for reference
+    
+    api.send({
+      data: null
+    });
+  } catch (e) {
+    console.log(e);
+    api.send({
+      data: `error`
+    });
+  }
 });
 
 // maintenace timestamp
