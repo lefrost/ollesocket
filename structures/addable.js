@@ -30,7 +30,7 @@ async function getStatStruct(d) {
     let obj = {
       id: d.id || id,
       code: d.code || ``, // eg. `enter`
-      data: d.data || {}, // eg. {count}
+      data: d.data || {}, // eg. for code=`enter`: {total_count, guest_count, user_count}
       metadata: d.metadata || util.getStructMetadataObj(`stat`, util.getTimestamp())
     }
 
