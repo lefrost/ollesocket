@@ -10,12 +10,36 @@ module.exports = {
 async function get(d) {
   try {
     switch (d.type) {
+      case `stat`: {
+        return await getStatStruct(d.obj);
+      }
       case `user`: {
         return await getUserStruct(d.obj);
       }
     }
 
     return null;
+  } catch (e) {
+    console.log(e);
+    return null;
+  }
+}
+
+async function getStatStruct(d) {
+  try {
+    let obj = {
+      id: d.id || id,
+      code: d.code || ``, // eg. `enter`
+      data: d.data || {}, // eg. {count}
+      metadata: d.metadata || util.getStructMetadataObj(`stat`, util.getTimestamp())
+    }
+
+    return {
+      collection_name: `stats`,
+      in_database: true,
+      pullable: false,
+      obj
+    }
   } catch (e) {
     console.log(e);
     return null;
@@ -37,13 +61,13 @@ async function getUserStruct(d) {
     //   nft_cxs: d.nft_cxs || [], // [{code, nfts[{addy, wallet_addy, name, image_url, metadata_url}]]
     //   servers: d.servers || [], // [{id, type<`admin`, `staff`, `member`, `none`>}]
     //   settings: d.settings || {}, // {...}
-    //   metadata: d.metadata || getStructMetadataObj(`user`, util.getTimestamp())
+    //   metadata: d.metadata || util.getStructMetadataObj(`user`, util.getTimestamp())
     // }
 
     let obj = {
       id: d.id || id,
       code: d.code || id.substring(0, 10),
-      metadata: d.metadata || getStructMetadataObj(`user`, util.getTimestamp())
+      metadata: d.metadata || util.getStructMetadataObj(`user`, util.getTimestamp())
     }
   
     return {

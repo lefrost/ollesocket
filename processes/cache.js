@@ -33,6 +33,7 @@ async function refreshCache(d) {
 
 async function refreshCachedItems() {
   let keys = [
+    `stats`,
     `users`,
   ];
 

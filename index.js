@@ -26,6 +26,9 @@ let API_KEY = process.env.API_KEY;
 
 let jobs = [];
 let maintenance_timestamp = null;
+let stats = {
+  enter_count: 0,
+}
 
 // ---- app & server
 
@@ -448,6 +451,21 @@ app.post(`/load`, async (fe, api) => {
   );
 });
 
+app.post(`/enter`, async (fe, api) => {
+  try {
+    // tba (misc): `/enter` called in frontend when user enters; increment `stats.enter_count`
+
+    api.send({
+      data: null
+    });
+  } catch (e) {
+    console.log(e);
+    api.send({
+      data: `error`
+    });
+  }
+});
+
 app.post(`/stripe`, async (fe, api) => {
   try {
     // tba (stripe): set up stripe webhook from stripe's dashboard --- call utils->stripe.handleEvent(fe, is_event_parsed:false) --- see stripe.js "references" notes for reference
@@ -462,6 +480,22 @@ app.post(`/stripe`, async (fe, api) => {
     });
   }
 });
+
+// stats
+
+statsRefresh();
+
+async function statsRefresh() {
+  try {
+    await util.wait(60);
+
+    // tba (misc): clone `stats.enter_count` value to temp var, reset `stats.enter_count` itself to 0, then call `dataflow.edit()` to update `stat:code="enter".data.count` to increment the aforementioned temp var's value 
+  } catch (e) {
+    console.log(e);
+  } finally {
+    statsRefresh();
+  }
+}
 
 // maintenace timestamp
 

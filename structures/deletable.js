@@ -10,6 +10,9 @@ module.exports = {
 async function get(d) {
   try {
     switch (d.type) {
+      case `stat`: {
+        return await getStatStruct(d);
+      }
       case `user`: {
         return await getUserStruct(d);
       }
@@ -21,6 +24,20 @@ async function get(d) {
     return null;
   }
 }
+
+async function getStatStruct(d) {
+  try {
+    return {
+      collection_name: `stats`,
+      in_database: true,
+      pullable_attributes: [],
+    }
+  } catch (e) {
+    console.log(e);
+    return null;
+  }
+}
+
 
 async function getUserStruct(d) {
   try {
