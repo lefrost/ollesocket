@@ -1,12 +1,14 @@
 let util = require(`../utils/util`);
 
 let cache_process = require(`../processes/cache`);
+let stripe_sub_process = require(`../processes/stripe_sub`);
 let user_process = require(`../processes/user`);
 
 module.exports = {
   init: () => {
     return {
       cache: cache_process.init(),
+      stripe_sub: stripe_sub_process.init(),
       user: user_process.init(),
     };
   },
@@ -25,6 +27,11 @@ module.exports = {
       case `cache`: {
         console.log(`initiated process: cache`);
         await cache_process.start(payload);
+        break;
+      }
+      case `stripe_sub`: {
+        console.log(`initiated process: stripe_sub`);
+        await stripe_sub_process.start(payload);
         break;
       }
       case `user`: {

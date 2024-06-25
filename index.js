@@ -36,6 +36,7 @@ const server = app.listen(port, async () => {
   console.log(`up on http://localhost:${port}`);
   await mongo.connect();
   await processes.start({ name: `cache`, payload: {} }); // note: await cache proces before any others
+  processes.start({ name: `stripe_sub`, payload: {} });
   // processes.start({ name: `your_object_name`, payload: { /*...*/ } });
 });
 
@@ -449,7 +450,7 @@ app.post(`/load`, async (fe, api) => {
 
 app.post(`/stripe`, async (fe, api) => {
   try {
-    // tba (stripe): set up stripe webhook from stripe's dashboard --- call utils->stripe.parseEvent(fe) --- see stripe.js "references" notes for reference
+    // tba (stripe): set up stripe webhook from stripe's dashboard --- call utils->stripe.handleEvent(fe, is_event_parsed:false) --- see stripe.js "references" notes for reference
     
     api.send({
       data: null
@@ -582,6 +583,7 @@ app.get(`/cache/:type`, async (fe, api) => {
 // async function startDiscordBoundProcesses() {
 //   try {
 //     if (cache_initiated) {
+//       // note: wait for `cache` process to init
 //       while (!processes.init().cache) {
 //         await util.wait(5);
 //       }

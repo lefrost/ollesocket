@@ -39,7 +39,7 @@ async function processUsers(d) {
     //     .withConcurrency(Math.min(users.length, 5))
     //     .process(async (user) => {
     //       try {
-    //         // todo: process user --- add dupe check, check accounts with matching emails for dupes, prioritise newest dupe, move all unadded user.connections and user.subscriptions from older dupes to newest dupe, remove older dupes
+    //         // todo: process user --- add dupe check, check accounts with matching emails for dupes, prioritise newest dupe, move all unadded user.connections and user.stripe_subs from older dupes to newest dupe, remove older dupes
     //       } catch (e) {
     //         console.log(e);
     //       } finally {
