@@ -27,7 +27,9 @@ let API_KEY = process.env.API_KEY;
 let jobs = [];
 let maintenance_timestamp = null;
 let stats = {
-  enter_count: 0,
+  enter_total_count: 0,
+  enter_user_count: 0,
+  enter_guest_count: 0,
 }
 
 // ---- app & server
@@ -453,7 +455,9 @@ app.post(`/load`, async (fe, api) => {
 
 app.post(`/enter`, async (fe, api) => {
   try {
-    // tba (misc): `/enter` called in frontend when user enters; increment `stats.enter_count`
+    let user_id = fe.body.user_id || ``;
+    
+    // tba (misc): `/enter` called in frontend when user enters; increment `stats.enter_total_count`, and `stats.enter_guest_count`/`stats.enter_user_count` (depending on whether valid user_id is present)
 
     api.send({
       data: null
@@ -489,7 +493,7 @@ async function statsRefresh() {
   try {
     await util.wait(60);
 
-    // tba (misc): clone `stats.enter_count` value to temp var, reset `stats.enter_count` itself to 0, then call `dataflow.edit()` to update `stat:code="enter".data.count` to increment the aforementioned temp var's value 
+    // tba (misc): clone `stats.enter_count` value to temp var, reset `stats.enter_count` itself to 0, then call `dataflow.edit()` to update `stat:code="enter".data.total_count/guest_count/user_count` to increment the aforementioned temp var's value 
   } catch (e) {
     console.log(e);
   } finally {

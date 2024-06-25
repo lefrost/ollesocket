@@ -137,6 +137,13 @@ async function edit(d) {
         }
       }
 
+      if (d.obj[`metadata`]) {
+        edits[`metadata`] = {
+          ...(d.obj[`metadata`] || {}),
+          edit_timestamp: util.getTimestamp()
+        }
+      } 
+
       let obj;
 
       if (editable_data.in_database) {

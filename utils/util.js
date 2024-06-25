@@ -331,7 +331,8 @@ module.exports = {
     try {
       return {
         type: type || ``,
-        create_timestamp: timestamp || module.exports.getTimestamp(),
+        add_timestamp: timestamp || module.exports.getTimestamp(),
+        edit_timestamp: null,
         status: `active`,
         issues: [],
         flags: [],
