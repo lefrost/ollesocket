@@ -198,7 +198,7 @@ module.exports = {
 
   clone: (obj) => {
     try {
-      return JSON.parse(JSON.stringify(obj));
+      return obj ? JSON.parse(JSON.stringify(obj)) : null;
     } catch (e) {
       console.log(e);
       return null;
