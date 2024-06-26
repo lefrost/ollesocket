@@ -3,6 +3,7 @@
 require(`dotenv`).config();
 
 const express = require(`express`);
+const fileUpload = require('express-fileupload');
 const compression = require(`compression`);
 const app = express();
 const {
@@ -17,6 +18,7 @@ let adhoc = require(`./controllers/adhoc`);
 let dataflow = require(`./controllers/dataflow`);
 let processes = require(`./controllers/processes`);
 let cache = require(`./utils/cache`);
+let gcloud = require(`./utils/gcloud`);
 let mongo = require(`./utils/mongo`);
 let rest = require(`./utils/rest`);
 let util = require(`./utils/util`);
@@ -36,10 +38,20 @@ let stats = {
 
 app.use(express.json({ limit: `50mb`, extended: true }));
 app.use(compression());
+app.use(
+  fileUpload({
+    limits: {
+      fileSize: 10000000, // note: limit any file objects (eg. images) that get sent in from frontend to be under ~10mb --- reference: https://pqina.nl/blog/upload-image-with-nodejs/
+    },
+    abortOnLimit: true,
+  })
+);
+
 
 const server = app.listen(port, async () => {
   console.log(`up on http://localhost:${port}`);
   await mongo.connect();
+  await gcloud.connect();
   await processes.start({ name: `cache`, payload: {} }); // note: await cache proces before any others
   processes.start({ name: `stripe_sub`, payload: {} });
   // processes.start({ name: `your_object_name`, payload: { /*...*/ } });

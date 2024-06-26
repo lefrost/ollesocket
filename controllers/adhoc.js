@@ -1,12 +1,11 @@
 let cache = require(`../utils/cache`);
 let dataflow = require(`./dataflow`);
+let gcloud = require(`../utils/gcloud`);
 let util = require(`../utils/util`);
 
 const ITEM_TYPES = require(`../data/item_types.json`);
 
 // let category_name = require(`./adhoc/category_name`);
-
-// tba (misc): addUser() and editUser() adhoc functions that replace `add/edit:user` calls in the frontend --- this is so that during these add/edit processes, backend functions can be executed, such as uploading user's icon image to google cloud, retrieving the resulting image url, and setting that image url in mongodb --- also add utils->gcloud.js import
 
 module.exports = {
   load: async (d) => {
@@ -29,6 +28,14 @@ async function load(d) {
       //   data = await category_name.load(d);
       //   break;
       // }
+      case `user_add`: {
+        data = await loadUserAdd(obj);
+        break;
+      }
+      case `user_edit`: {
+        data = await loadUserEdit(obj);
+        break;
+      }
       default: {
         data = null;
         break;
@@ -44,6 +51,33 @@ async function load(d) {
   } catch (e) {
     console.log(e);
     return util.getRes({ res: `no`, act: `load`, type: d.type, data: null });
+  }
+}
+
+async function loadUserAdd(d) {
+  try {
+    // tba (misc): uploading user's icon image to google cloud, retrieving the resulting image url, and setting that image url in mongodb
+    // note: handle `user.icon_image_url` based on `d.icon_image_obj.value/format<'url', 'base64'>`
+
+    console.log(`test: user add`);
+    console.log(d);
+
+    return null;
+  } catch (e) {
+    console.log(e);
+    return null;
+  }
+}
+
+async function loadUserEdit(d) {
+  try {
+    // tba (misc): uploading user's icon image to google cloud, retrieving the resulting image url, and setting that image url in mongodb
+    // note: handle `user.icon_image_url` based on `d.icon_image_obj.value/format<'url', 'base64'>`
+    
+    return null;
+  } catch (e) {
+    console.log(e);
+    return null;
   }
 }
 
