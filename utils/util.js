@@ -374,7 +374,5 @@ module.exports = {
       console.log(e);
       return null;
     }
-  },
-
-
+  }
 };

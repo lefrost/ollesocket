@@ -26,7 +26,7 @@ module.exports = {
 
 async function processStripeSubs(d) {
   try {
-    // tba (stripe): call utils->stripe.getLatestEvents(), and for any stripe events that haven't been handled in stripe webhook listener, call handleEvent(req, is_event_parsed:true)
+    // tba (stripe): call utils->stripe.getLatestEvents(), and for any stripe events that haven't been handled in stripe webhook listener, call handleEvent(event, is_event_parsed:true)
     
     console.log(init ? `stripe_subs refreshed` : `stripe_subs initiated`);
     init = true;

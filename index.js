@@ -490,7 +490,7 @@ app.post(`/enter`, async (fe, api) => {
 
 app.post(`/stripe`, async (fe, api) => {
   try {
-    // tba (stripe): set up stripe webhook from stripe's dashboard --- call utils->stripe.handleEvent(fe, is_event_parsed:false) --- see stripe.js "references" notes for reference
+    // tba (stripe): set up stripe webhook from stripe's dashboard --- call utils->stripe.handleEvent(fe.body, is_event_parsed:false) --- see stripe.js "references" notes for reference
     
     api.send({
       data: null

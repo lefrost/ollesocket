@@ -43,7 +43,7 @@ module.exports = {
   }
 }
 
-// tba (gcloud): uploadImage(image_file, directory, name) used in adhoc->addUser()/editUser()
+// tba (gcloud): uploadImage(image_base64, directory, name) used in adhoc->addUser()/editUser()
 
 // tba (gcloud): delImage(image_url) used in processes->user.js when processing `user.metadata.prev_gcloud_image_urls`
 
