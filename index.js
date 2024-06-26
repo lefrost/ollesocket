@@ -511,7 +511,7 @@ async function statsRefresh() {
   try {
     await util.wait(60);
 
-    // tba (misc): clone `stats.enter_count` value to temp var, reset `stats.enter_count` itself to 0, then call `dataflow.edit()` to update `stat:code="enter".data.total_count/guest_count/user_count` to increment the aforementioned temp var's value 
+    // tba (misc): clone `stats` obj to temp var, reset `stats`, then call `dataflow.edit()` to update `stat:code="enter".data.total_count/guest_count/user_count` to increment with the aforementioned temp var's values
   } catch (e) {
     console.log(e);
   } finally {
