@@ -31,6 +31,7 @@ module.exports = {
       )) {
         return null;
       } else {
+        // note: accept base64 format for image input
         // let file = gcloud_bucket.file(`images/${directory_name}/${file_name}`);
 
         return `tba`;

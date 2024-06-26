@@ -364,5 +364,17 @@ module.exports = {
       console.log(e);
       return null;
     }
-  }
+  },
+
+  imgUrlToBase64: (img_url) => {
+    try {
+      // tba (misc)
+      return null;
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
+  },
+
+
 };
