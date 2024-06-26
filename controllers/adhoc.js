@@ -60,9 +60,6 @@ async function loadUserAdd(d) {
 
     // tba (misc): uploading user's icon image to google cloud, retrieving the resulting image url, and setting that image url in mongodb
 
-    console.log(`test: user add`);
-    console.log(d);
-
     return null;
   } catch (e) {
     console.log(e);
@@ -75,7 +72,6 @@ async function loadUserEdit(d) {
     // note: handle `user.icon_image_url` based on `d.icon_image_obj.value/format<'url', 'base64'>` --- need to call util.imgUrlToBase64() if format is `url`
 
     // tba (misc): uploading user's icon image to google cloud, retrieving the resulting image url, and setting that image url in mongodb
-
 
     return null;
   } catch (e) {
