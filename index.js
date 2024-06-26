@@ -456,8 +456,14 @@ app.post(`/load`, async (fe, api) => {
 app.post(`/enter`, async (fe, api) => {
   try {
     let user_id = fe.body.user_id || ``;
-    
-    // tba (misc): `/enter` called in frontend when user enters; increment `stats.enter_total_count`, and `stats.enter_guest_count`/`stats.enter_user_count` (depending on whether valid user_id is present)
+
+    stats.enter_total_count += 1;
+
+    if (user_id) {
+      stats.enter_user_count += 1;
+    } else {
+      stats.enter_guest_count += 1;
+    }
 
     api.send({
       data: `done`

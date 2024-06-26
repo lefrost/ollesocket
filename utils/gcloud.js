@@ -1,3 +1,6 @@
+const GCLOUD_PROJECT_ID = process.env.GCLOUD_PROJECT_ID;
+const GCLOUD_BUCKET_ID = process.env.GCLOUD_BUCKET_ID;
+
 // tba (gcloud): env (eg. GCLOUD_PROJECT_ID, GCLOUD_BUCKET_ID) and code (eg. import from "@google-cloud/storage") setup for connecting to googlecloud --- implement similar one-time connect() function to utils->mongo.connect()
 
 // tba (gcloud): uploadImage(image_obj, name) used in adhoc->addUser()/editUser()

@@ -354,7 +354,7 @@ module.exports = {
 
       switch (type) {
         case `user`: {
-          // tba (misc): map user
+          // todo
           break;
         }
       }
