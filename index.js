@@ -460,7 +460,7 @@ app.post(`/enter`, async (fe, api) => {
     // tba (misc): `/enter` called in frontend when user enters; increment `stats.enter_total_count`, and `stats.enter_guest_count`/`stats.enter_user_count` (depending on whether valid user_id is present)
 
     api.send({
-      data: null
+      data: `done`
     });
   } catch (e) {
     console.log(e);

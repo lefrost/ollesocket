@@ -56,10 +56,10 @@ async function getUserStruct(d) {
     //   name: d.name || ``,
     //   icon_image_url: d.icon_image_url || ``,
     //   timezone: d.timezone || ``,
-    //   connections: d.connections || [], // [{type<`google`, `discord`, `solana`, `suave`, ...>, code, name}]
+    //   connections: d.connections || [], // [{type<`email`, `discord`, `solana`, `suave`, ...>, code, name}]
     //   stripe_subs: d.stripe_subs || [], // [{customer_id, customer_email, price_id, product_id}]
-    //   nft_cxs: d.nft_cxs || [], // [{code, nfts[{addy, wallet_addy, name, image_url, metadata_url}]]
-    //   servers: d.servers || [], // [{id, type<`admin`, `staff`, `member`, `none`>}]
+    //   // nft_cxs: d.nft_cxs || [], // [{code, nfts[{addy, wallet_addy, name, image_url, metadata_url}]]
+    //   // servers: d.servers || [], // [{id, type<`admin`, `staff`, `member`, `none`>}]
     //   settings: d.settings || {}, // {...}
     //   metadata: d.metadata || util.getStructMetadataObj(`user`, util.getTimestamp())
     // }
