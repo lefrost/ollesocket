@@ -55,7 +55,13 @@ async function getUserStruct(d) {
       in_database: true,
       attributes: {
         editables: [
-          `name`
+          `code`,
+          `name`,
+          `icon_image_url`,
+          `timezone`,
+          `connections`,
+          `stripe_subs`,
+          `settings`
         ],
         numerics: [],
         booleans: [],

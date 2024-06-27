@@ -113,6 +113,14 @@ module.exports = {
           )) {
             console.log(`stripe.handleEvent - checkout.session.completed - no matching user found`);
             return;
+          } else if ((matching_user.stripe_subs || []).some(s =>
+            (s.customer_id === customer.id) &&
+            (s.customer_email === customer.email)
+            (s.price_id === price.id) &&
+            (s.product_id === product.id)
+          )) {
+            console.log(`stripe.handleEvent - checkout.session.completed - matching user stripe_sub already added`);
+            return;
           }
       
           await dataflow.edit({
@@ -139,9 +147,36 @@ module.exports = {
           if (!(
             subscription &&
             subscription.id &&
-            subscription.customer
+            subscription.customer &&
+            subscription.items &&
+            subscription.items.data
           )) {
             console.log(`stripe.handleEvent - customer.subscription.deleted - invalid subscription`);
+            return;
+          }
+
+          const subscription_items = subscription.items.data.filter(i => 
+            (i.object === `subscription_item`) &&
+            i.id &&
+            i.price &&
+            i.price.id
+          ) || [];
+
+          if (subscription_items.length === 0) {
+            console.log(`stripe.handleEvent - customer.subscription.deleted - invalid subscription item(s)`);
+            return;
+          }
+
+          let prices = [];
+
+          for (let subscription_item of subscription_items.slice()) {
+            if (!prices.some(p => p.id !== subscription_item.price.id)) {
+              prices.push(subscription_item.price);
+            }
+          }
+
+          if (prices.length === 0) {
+            console.log(`stripe.handleEvent - customer.subscription.deleted - invalid price(s)`);
             return;
           }
 
@@ -167,13 +202,28 @@ module.exports = {
           )) {
             console.log(`stripe.handleEvent - checkout.session.completed - no matching user found`);
             return;
+          }  else if (!(matching_user.stripe_subs || []).some(s =>
+            (s.customer_id === subscription.customer) &&
+            prices.some(p =>
+              p.id === s.price_id
+            )
+          )) {
+            console.log(`stripe.handleEvent - checkout.session.completed - matching user stripe_sub already deleted`);
+            return;
           }
 
           await dataflow.edit({
             type: `user`,
             obj: {
               id: matching_user.id,
-              stripe_subs: (matching_user.stripe_subs || []).filter(s => s.customer_id !== subscription.customer) || []
+              stripe_subs: (matching_user.stripe_subs || []).filter(s =>
+                !(
+                  (s.customer_id === subscription.customer) &&
+                  prices.some(p =>
+                    p.id === s.price_id
+                  )
+                )
+              ) || []
             }
           });
 
@@ -186,12 +236,24 @@ module.exports = {
     }
   },
 
-  getLatestEvents: async () => {
+  getLatestEvents: async (earliest_timestamp) => {
     try {
-      let latest_events = (await stripe.events.list({
+      let latest_events = ((await stripe.events.list({
         types: [`checkout.session.completed`, `customer.subscription.deleted`],
-        limit: 50
-      }) || {}).data || [];
+        limit: 20
+      }) || {}).data || []).filter(e =>
+        e.type &&
+        e.data &&
+        e.data.object &&
+        e.data.object.id &&
+        e.created
+      );
+
+      if (earliest_timestamp) {
+        latest_events = latest_events.filter(e =>
+          (e.created >= earliest_timestamp)
+        ) || [];
+      }
 
       return latest_events || [];
     } catch (e) {

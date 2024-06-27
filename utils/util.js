@@ -394,5 +394,18 @@ module.exports = {
       console.log(e);
       return null;
     }
+  },
+
+  getImageExtensionFromBase64: async (img_base64) => {
+    try {
+      if (!img_base_64) {
+        return ``;
+      }
+
+      return img_base64.substring("data:image/".length, img_base64.indexOf(";base64")) || ``;
+    } catch (e) {
+      console.log(e);
+      return ``;
+    }
   }
 };

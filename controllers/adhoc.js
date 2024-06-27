@@ -56,27 +56,123 @@ async function load(d) {
 
 async function loadUserAdd(d) {
   try {
-    // note: handle `user.icon_image_url` based on `d.icon_image_obj.value/format<'url', 'base64'>` --- need to call util.imgUrlToBase64() if format is `url`
+    const ENFORCE_EMAIL_SIGNUP_ONLY = true;
 
-    // tba (misc): uploading user's icon image to google cloud, retrieving the resulting image url, and setting that image url in mongodb
+    let name = d.name || ``;
+    let icon_image_obj = d.icon_image_obj || {};
+    let timezone = d.timezone || ``;
+    let connections = d.connections || [];
+    let stripe_subs = d.stripe_subs || [];
+    let settings = d.settings || {};
 
-    return null;
+    if (!(
+      name &&
+      icon_image_obj &&
+      icon_image_obj.value &&
+      icon_image_obj.format &&
+      (connections.length >= 1) &&
+      (
+        ENFORCE_EMAIL_SIGNUP_ONLY ?
+          connections.some(c =>
+            (c.type === `email`) &&
+            c.code
+          )
+          : true
+      )
+    )) {
+      return null;
+    }
+
+    let new_user = (await dataflow.add({
+      url: `add`,
+      type: `user`,
+      obj: {
+        name,
+        icon_image_url: ``,
+        timezone,
+        connections,
+        stripe_subs,
+        settings,
+      }
+    }) || {}).data || null;
+
+    if (new_user && new_user.id) {
+      let edit_image_res = await loadUserEditImage({
+        image_value: icon_image_obj.value,
+        image_format: icon_image_obj.format
+      }) || ``
+
+      if (edit_image_res === `done`) {
+        let updated_user = await dataflow.get({
+          all: false,
+          type: `user`,
+          id: new_user.id || ``,
+        }) || null;
+
+        if (updated_user && updated_user.id) {
+          new_user = util.clone(updated_user);
+        }
+      }
+    }
+
+    return new_user || null;
   } catch (e) {
     console.log(e);
     return null;
   }
 }
 
-async function loadUserEdit(d) {
+async function loadUserEditImage(d) {
   try {
-    // note: handle `user.icon_image_url` based on `d.icon_image_obj.value/format<'url', 'base64'>` --- need to call util.imgUrlToBase64() if format is `url`
+    // note: handle `user.icon_image_url` based on `d.image_value/image_format<'url', 'base64'>` --- need to call util.imgUrlToBase64() if image_format is `url`
 
-    // tba (misc): uploading user's icon image to google cloud, retrieving the resulting image url, and setting that image url in mongodb
+    let image_value = d.image_value || ``;
+    let image_format = d.image_format || ``;
+    let user_id = d.user_id || ``;
+    
+    if (!(
+      image_value &&
+      image_format &&
+      user_Id
+    )) {
+      return `error`;
+    }
 
-    return null;
+    let icon_image_base64 = ``;
+
+    if (image_format === `base64`) {
+      icon_image_base64 = image_value || ``;
+    } else if (image_format === `url`) {
+      icon_image_base64 = util.imgUrlToBase64(image_value) || ``;
+    }
+
+    let icon_image_extension = util.getImageExtensionFromBase64(icon_image_base64) || ``;
+
+    // note: upload user's icon image to google cloud, retrieve the resulting image url, and set that image url in mongodb
+
+    let icon_image_url = ``;
+
+    if (icon_image_base64 && icon_image_extension) {
+      icon_image_url = await gcloud.uploadImage(
+        icon_image_base64,
+        icon_image_extension,
+        `user_icons`,
+        `${user_id}_${util.getTimestamp()}`
+      ) || ``;
+    }
+
+    await dataflow.edit({
+      type: `user`,
+      obj: {
+        id: user_id,
+        icon_image_url
+      }
+    });
+
+    return `error`;
   } catch (e) {
     console.log(e);
-    return null;
+    return `error`;
   }
 }
 

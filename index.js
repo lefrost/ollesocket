@@ -55,6 +55,7 @@ const server = app.listen(port, async () => {
   await gcloud.connect();
   await processes.start({ name: `cache`, payload: {} }); // note: await cache proces before any others
   processes.start({ name: `stripe_sub`, payload: {} });
+  processes.start({ name: `user`, payload: {} });
   // processes.start({ name: `your_object_name`, payload: { /*...*/ } });
 });
 
@@ -686,7 +687,7 @@ app.get(`/cache/:type`, async (fe, api) => {
 //         await util.wait(5);
 //       }
 
-//       processes.start({ name: `user`, payload: { discord_client: discord_bot } });
+//       processes.start({ name: `user`, payload: { discord_client: discord_bot } }); // note: remove processes.start() for `user` above if enabling this discord-bound one
 
 //       // processes.start({ name: `your_object_name`, payload: { discord_client: discord_bot } });
 

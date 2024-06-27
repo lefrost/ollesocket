@@ -27,28 +27,120 @@ module.exports = {
 
 async function processUsers(d) {
   try {
-    // tba (misc): process any user.metadata.prev_gcloud_image_urls and exec utils->gcloud.delImage() calls, then wiping user.metadata.prev_gcloud_image_urls clean in mongo
-
     // let discord_client = d.discord_client;
     // let guild = await discord_client.guilds.fetch(DISCORD_SERVER_ID);
     // let members = (await guild.members.fetch({ force: true })).map((m) => m);
-    // let users = await getUsers();
-    // let count = 0;
+    let users = (await dataflow.getMany({
+      all: false,
+      type: `user`,
+      filters: []
+    }) || []).slice().sort((a, b) => 
+      (b.metadata || {}).add_timestamp - (a.metadata || {}).add_timestamp
+    ) || [];
+    let count = 0;
 
-    // if (users.length >= 0) {
-    //   await PromisePool.for(users)
-    //     .withConcurrency(Math.min(users.length, 5))
-    //     .process(async (user) => {
-    //       try {
-    //         // todo: process user --- add dupe check, check accounts with matching emails for dupes, prioritise newest dupe, move all unadded user.connections and user.stripe_subs from older dupes to newest dupe, remove older dupes
-    //       } catch (e) {
-    //         console.log(e);
-    //       } finally {
-    //         count++;
-    //         console.log(`process users: ${count} / ${users.length}`);
-    //       }
-    //   });
-    // }
+    let user_ids_slated_for_deletion = [];
+
+    if (users.length >= 0) {
+      await PromisePool.for(users)
+        // .withConcurrency(Math.min(users.length, 5))
+        .withConcurrency(1) // note: process users 1 at a time
+        .process(async (user) => {
+          try {
+            // note: process any user.metadata.prev_gcloud_image_urls and exec utils->gcloud.delImage() calls, then wiping user.metadata.prev_gcloud_image_urls clean in mongo
+
+
+            if (((user.metadata || {}).prev_gcloud_image_urls || []).length >= 1) {
+              let remaining_gcloud_image_urls = user.metadata.prev_gcloud_image_urls.slice() || [];
+
+              for (let gloud_image_url of user.metadata.prev_gcloud_image_urls.slice()) {
+                let del_res = await gcloud.delImage(gloud_image_url) || ``;
+
+                if (del_res === `done`) {
+                  remaining_gcloud_image_urls = remaining_gcloud_image_urls.filter(u => u !== gloud_image_url);
+                }
+              }
+
+              await dataflow.edit({
+                type: `user`,
+                obj: {
+                  id: user.id,
+                  metadata: {
+                    ...(user.metadata || {}),
+                    prev_gcloud_image_urls: remaining_gcloud_image_urls || []
+                  }
+                }
+              });
+            }
+
+            // note: dupe check --- check accounts with matching emails for dupes, prioritise newest dupe, move all unadded user.connections and user.stripe_subs from older dupes to newest dupe, remove older dupes
+
+            let matching_users = users.filter(mu =>
+              (mu.id !== user.id) &&
+              (mu.connections || []).some(muc =>
+                (muc.type === `email`) &&
+                (user.connections || []).some(uc =>
+                  (uc.type === `email`) &&
+                  (uc.code === muc.code)
+                )
+              ) &&
+              ((mu.metadata || {}).add_timestamp <= (user.metadata || {}).add_timestamp)
+            ).slice() || [];
+
+            let user_updated_connections = (user.connections || []).slice() || [];
+            let user_updated_stripe_subs = (user.stripe_subs || []).slice() || [];
+
+            for (let matching_user of matching_users) {
+              let matching_user_c = util.clone(matching_user);
+
+              user_ids_slated_for_deletion.push(matching_user_c.id);
+
+              user_updated_connections.push(
+                ...(matching_user_c.connections || []).filter(muc =>
+                  !user_updated_connections.some(uc =>
+                    (uc.type === muc.type) &&
+                    (uc.code === muc.code)
+                  )
+                )
+              );
+
+              user_updated_stripe_subs.push(
+                ...(matching_user_c.stripe_subs || []).filter(mus =>
+                  !user_updated_stripe_subs.some(us =>
+                    (us.customer_id === mus.customer_id) &&
+                    (us.customer_email === mus.customer_email) &&
+                    (us.price_id === mus.price_id) &&
+                    (us.product_id === mus.product_id)
+                  )
+                )
+              );
+            }
+
+            await dataflow.edit({
+              type: `user`,
+              obj: {
+                id: user.id,
+                obj: {
+                  connections: user_updated_connections || [],
+                  stripe_subs: user_updated_stripe_subs || []
+                }
+              }
+            });
+          } catch (e) {
+            console.log(e);
+          } finally {
+            count++;
+            console.log(`process users: ${count} / ${users.length}`);
+          }
+      });
+    }
+
+    for (let user_id of user_ids_slated_for_deletion) {
+      await dataflow.del({
+        type: `user`,
+        id: user_id
+      });
+    }
         
     // count = 0;
 
@@ -80,7 +172,7 @@ async function processUsers(d) {
     console.log(init ? `users refreshed` : `users initiated`);
     init = true;
 
-    await util.wait(60);
+    await util.wait(180); // 60 * 2
   } catch (e) {
     console.log(e);
   } finally {

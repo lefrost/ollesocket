@@ -27,6 +27,8 @@ async function get(d) {
 
 async function getStatStruct(d) {
   try {
+    let id = util.generateId(20);
+    
     let obj = {
       id: d.id || id,
       code: d.code || ``, // eg. `enter`

@@ -8,6 +8,7 @@ let dataflow = require(`../controllers/dataflow`);
 // const DISCORD_ROLE_ID = `discord_role_id_here`;
 
 let init = false;
+let latest_process_timestamp = null;
 
 module.exports = {
   init: () => {
@@ -27,9 +28,17 @@ module.exports = {
 
 async function processStripeSubs(d) {
   try {
-    // note: handle any stripe events that haven't already been handled from stripe webhook listener
+    // note: handle any stripe events that haven't already been handled from stripe webhook listener (checking of "if already handled" is done within utils->stripe.handleEevent() itself)
 
-    let latest_stripe_events = await stripe.getLatestEvents() || [];
+    let users = await dataflow.getMany({
+      all: false,
+      type: `user`,
+      filters: []
+    }) || [];
+
+    let latest_stripe_events = await stripe.getLatestEvents(latest_process_timestamp) || [];
+
+    latest_process_timestamp = util.getTimestamp();
 
     for (let event of latest_stripe_events) {
       await stripe.handleEvent(event, true);
