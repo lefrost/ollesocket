@@ -134,7 +134,7 @@ module.exports = {
           break;
         }
         case `customer.subscription.deleted`: {
-          const subscription = await stripe.subscriptions.retrieve(data.object.id);
+          const subscription = await stripe.subscriptions.retrieve(event.data.object.id);
 
           if (!(
             subscription &&
@@ -188,9 +188,10 @@ module.exports = {
 
   getLatestEvents: async () => {
     try {
-      let latest_events = [];
-
-      // tba (stripe): getLatestEvents(), to poll latest x (eg. 500) stripe events and process in `processes->stripe_subs.processStripeSubs()` in case stripe webhook listener wasn't able to capture a stripe event live (eg. due to api outage)
+      let latest_events = (await stripe.events.list({
+        types: [`checkout.session.completed`, `customer.subscription.deleted`],
+        limit: 50
+      }) || {}).data || [];
 
       return latest_events || [];
     } catch (e) {
@@ -204,4 +205,5 @@ module.exports = {
   - setup stripe in general: https://youtu.be/ag7HXbgJtuk?si=Fxxkv7x8p_lNU3Nv
   - setup stripe webhook in nodejs: https://docs.stripe.com/webhooks/quickstart?lang=node
   - handle stripe webhook events, for handleEvent() function: https://github.com/marclou/stripe-sub/blob/main/app/api/webhook/stripe/route.js
+  - get list of stripe events: https://docs.stripe.com/api/events/list
 */
