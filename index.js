@@ -21,6 +21,7 @@ let cache = require(`./utils/cache`);
 let gcloud = require(`./utils/gcloud`);
 let mongo = require(`./utils/mongo`);
 let rest = require(`./utils/rest`);
+let stripe = require(`./utils/stripe`);
 let util = require(`./utils/util`);
 
 let port = process.env.PORT || 3001;
@@ -488,9 +489,10 @@ app.post(`/enter`, async (fe, api) => {
   }
 });
 
-app.post(`/stripe`, async (fe, api) => {
+app.post(`/stripe`, express.json({type: 'application/json'}), async (fe, api) => {
   try {
-    // tba (stripe): set up stripe webhook from stripe's dashboard --- call utils->stripe.handleEvent(fe.body, is_event_parsed:false) --- see stripe.js "references" notes for reference
+    // note: do `stripe listen --forward-to localhost:3001/stripe` to start listening to stripe events
+    await stripe.handleEvent(fe.text(), false);
     
     api.send({
       data: null

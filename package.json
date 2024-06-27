@@ -34,6 +34,7 @@
     "moment-timezone": "^0.5.43",
     "mongodb": "^3.6.10",
     "socket.io": "^4.5.4",
-    "stream": "^0.0.3"
+    "stream": "^0.0.3",
+    "stripe": "^16.0.0"
   }
 }

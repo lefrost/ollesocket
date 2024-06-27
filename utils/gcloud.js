@@ -1,5 +1,6 @@
 const stream = require('stream');
 
+const API_TYPE = process.env.API_TYPE;
 const GCLOUD_PROJECT_ID = process.env.GCLOUD_PROJECT_ID;
 const GCLOUD_BUCKET_ID = process.env.GCLOUD_BUCKET_ID;
 
@@ -36,7 +37,7 @@ module.exports = {
         let buffer_stream = new stream.PassThrough();
         buffer_stream.end(Buffer.from(image_base64, `base64`));
 
-        let gcloud_file_path = `images/${directory_name}/${file_name}.${image_extension}`;
+        let gcloud_file_path = `${API_TYPE === `dev` ? `dev` : `prod`}/images/${directory_name}/${file_name}.${image_extension}`;
         let file = gcloud_bucket.file(gcloud_file_path);
         
         buffer_stream.pipe(
