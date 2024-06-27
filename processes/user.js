@@ -1,4 +1,5 @@
 let cache = require(`../utils/cache`);
+let gcloud = require(`../utils/gcloud`);
 let util = require(`../utils/util`);
 let dataflow = require(`../controllers/dataflow`);
 const { PromisePool } = require("@supercharge/promise-pool");
