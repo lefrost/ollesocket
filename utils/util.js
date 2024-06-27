@@ -402,7 +402,8 @@ module.exports = {
         return ``;
       }
 
-      return img_base64.substring("data:image/".length, img_base64.indexOf(";base64")) || ``;
+      // reference: https://stackoverflow.com/a/40708540/8919391
+      return img_base64.substring(`data:image/`.length, img_base64.indexOf(`;base64`)) || ``;
     } catch (e) {
       console.log(e);
       return ``;
