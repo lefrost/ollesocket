@@ -1,4 +1,5 @@
 let cache = require(`../utils/cache`);
+let stripe = require(`../utils/stripe`);
 let util = require(`../utils/util`);
 let dataflow = require(`../controllers/dataflow`);
 // const { PromisePool } = require("@supercharge/promise-pool");
@@ -26,7 +27,13 @@ module.exports = {
 
 async function processStripeSubs(d) {
   try {
-    // tba (stripe): call utils->stripe.getLatestEvents(), and for any stripe events that haven't been handled in stripe webhook listener, call handleEvent(event, is_event_parsed:true)
+    // note: handle any stripe events that haven't already been handled from stripe webhook listener
+
+    let latest_stripe_events = await stripe.getLatestEvents() || [];
+
+    for (let event of latest_stripe_events) {
+      await stripe.handleEvent(event, true);
+    }
     
     console.log(init ? `stripe_subs refreshed` : `stripe_subs initiated`);
     init = true;
