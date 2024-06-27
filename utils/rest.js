@@ -12,7 +12,7 @@ module.exports = {
     let res = null;
     
     if (headers) {
-      res = (await axios.get(d.url || ``, { headers }));
+      res = (await axios.get(d.url || ``, headers));
     } else {
       res = (await axios.get(d.url || ``));
     }

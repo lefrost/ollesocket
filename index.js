@@ -42,7 +42,7 @@ app.use(compression());
 app.use(
   fileUpload({
     limits: {
-      fileSize: 10000000, // note: limit any file objects (eg. images) that get sent in from frontend to be under ~10mb --- reference: https://pqina.nl/blog/upload-image-with-nodejs/
+      fileSize: 10000000, // note: limit any file objects (eg. images) that get sent in from frontend to be under ~10mb --- ref: https://pqina.nl/blog/upload-image-with-nodejs/
     },
     abortOnLimit: true,
   })
@@ -513,7 +513,47 @@ async function statsRefresh() {
   try {
     await util.wait(60);
 
-    // tba (misc): clone `stats` obj to temp var, reset `stats`, then call `dataflow.edit()` to update `stat:code="enter".data.total_count/guest_count/user_count` to increment with the aforementioned temp var's values
+    let temp_stats = util.clone(stats);
+
+    stats = {
+      enter_total_count: 0,
+      enter_user_count: 0,
+      enter_guest_count: 0,
+    }
+
+    let enter_stat = await dataflow.get({
+      all: false,
+      type: `stat`,
+      filters: [
+        {
+          prop: `code`,
+          value: `enter`,
+          condition: `match`,
+          options: []
+        }
+      ]
+    }) || null;
+
+    if (
+      enter_stat &&
+      enter_stat.id
+    ) {
+      let enter_stat_c = util.clone(enter_stat);
+
+      let updated_enter_stat_data = enter_stat_c.data || {};
+
+      updated_enter_stat_data.total_count = (updated_enter_stat_data.total_count || 0) + (temp_stats.enter_total_count || 0);
+      updated_enter_stat_data.user_count = (updated_enter_stat_data.user_count || 0) + (temp_stats.enter_user_count || 0);
+      updated_enter_stat_data.guest_count = (updated_enter_stat_data.guest_count || 0) + (temp_stats.enter_guest_count || 0);
+
+      await dataflow.edit({
+        type: `stat`,
+        obj: {
+          id: enter_stat.id,
+          data: updated_enter_stat_data || {}
+        }
+      });
+    }
   } catch (e) {
     console.log(e);
   } finally {

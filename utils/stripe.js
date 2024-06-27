@@ -201,7 +201,7 @@ module.exports = {
   }
 }
 
-/* references:
+/* ref:
   - setup stripe in general: https://youtu.be/ag7HXbgJtuk?si=Fxxkv7x8p_lNU3Nv
   - setup stripe webhook in nodejs: https://docs.stripe.com/webhooks/quickstart?lang=node
   - handle stripe webhook events, for handleEvent() function: https://github.com/marclou/stripe-sub/blob/main/app/api/webhook/stripe/route.js

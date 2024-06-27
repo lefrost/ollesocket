@@ -84,7 +84,7 @@ module.exports = {
   }
 }
 
-/* references:
+/* ref:
   - setup gcloud and prelim for upload image to gcloud->project->bucket - https://dev.to/kamalhossain/upload-file-to-google-cloud-storage-from-nodejs-server-5cdg
   - (unused) specific code for upload image *object* to gcloud->project->bucket - https://stackoverflow.com/a/58478504/8919391
   - (partly used) various aspects of uploading image from frontend to nodejs, such as mimetype checking and size limit enforcement (involves importing `fileUpload = require('express-fileupload')` in index.js): https://pqina.nl/blog/upload-image-with-nodejs/

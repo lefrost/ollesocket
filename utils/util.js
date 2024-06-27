@@ -2,10 +2,12 @@
 // const ffprobeInstaller = require("@ffprobe-installer//ffprobe");
 // ffmpeg.setFfprobePath(ffprobeInstaller.path);
 
-var crypto = require("crypto");
+var crypto = require(`crypto`);
 var moment = require(`moment`);
 var moment_tz = require(`moment-timezone`);
 // var _ = require(`lodash`);
+
+let rest = require(`./rest`);
 
 const ITEM_TYPES = require(`../data/item_types.json`);
 
@@ -366,10 +368,28 @@ module.exports = {
     }
   },
 
-  imgUrlToBase64: (img_url) => {
+  imgUrlToBase64: async (img_url) => {
     try {
-      // tba (misc)
-      return null;
+      if (!(img_url || ``).trim()) {
+        return null;
+      }
+
+      // ref: get online image with axios, response type has to be set to `arraybuffer` - https://stackoverflow.com/a/52648030/8919391
+      let img = await rest.get({
+        url: img_url,
+        headers: {
+          responseType: `arraybuffer`
+        }
+      });
+
+      if (!(
+        img &&
+        img.data
+      )) {
+        return null;
+      }
+
+      return Buffer.from(img.data).toString(`base64`) || ``;
     } catch (e) {
       console.log(e);
       return null;
