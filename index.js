@@ -492,7 +492,7 @@ app.post(`/enter`, async (fe, api) => {
 app.post(`/stripe`, express.json({type: 'application/json'}), async (fe, api) => {
   try {
     // note: do `stripe listen --forward-to localhost:3001/stripe` to start listening to stripe events
-    await stripe.handleEvent(fe.text(), false);
+    await stripe.handleEvent(fe, false);
     
     api.send({
       data: null
