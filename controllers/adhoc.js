@@ -32,8 +32,12 @@ async function load(d) {
         data = await loadUserAdd(obj);
         break;
       }
-      case `user_edit`: {
-        data = await loadUserEdit(obj);
+      case `user_edit_image`: {
+        data = await loadUserEditImage(obj);
+        break;
+      }
+      case `component_sample`: {
+        data = await loadComponentSample(obj);
         break;
       }
       default: {
@@ -133,7 +137,7 @@ async function loadUserEditImage(d) {
     if (!(
       image_value &&
       image_format &&
-      user_Id
+      user_id
     )) {
       return `error`;
     }
@@ -173,6 +177,19 @@ async function loadUserEditImage(d) {
   } catch (e) {
     console.log(e);
     return `error`;
+  }
+}
+
+async function loadComponentSample(d) {
+  try {
+    let sample_var = d.sample_var || ``;
+
+    return {
+      text: `The sample_var is "${sample_var || `n/a`}".`
+    }
+  } catch (e) {
+    console.log(e);
+    return null;
   }
 }
 

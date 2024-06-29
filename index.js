@@ -61,28 +61,28 @@ const server = app.listen(port, async () => {
 
 // const { Server } = require(`socket.io`);
 const io = require(`socket.io`)(server, {
-  cors: {
-    origin: [
-      `http://localhost:3000`,
-      `https://www.ollesocket.vercel.app`,
-      `https://ollesocket.vercel.app`,
-    ],
-  },
+  // cors: {
+  //   origin: [
+  //     `http://localhost:3000`,
+  //     `https://www.ollesocket.vercel.app`,
+  //     `https://ollesocket.vercel.app`,
+  //   ],
+  // },
 });
 
 app.use(function (req, res, next) {
-  let auth_origins = [
-    `http://localhost:3000`,
-    `https://www.ollesocket.vercel.app`,
-    `https://ollesocket.vercel.app`,
-  ];
+  // let auth_origins = [
+  //   `http://localhost:3000`,
+  //   `https://www.ollesocket.vercel.app`,
+  //   `https://ollesocket.vercel.app`,
+  // ];
 
   // Website you wish to allow to connect
   // res.setHeader("Access-Control-Allow-Origin", "*");
   let origin = req.headers.origin;
   if (
-    auth_origins.includes(origin) &&
-    (util.isEmptyObj(req.body) || req.headers.x_api_key === API_KEY)
+    // auth_origins.includes(origin) &&
+    (util.isEmptyObj(req.body) || [API_KEY, `component`].includes(req.headers.x_api_key)) // note: allow `component` calls to access
   ) {
     res.setHeader("Access-Control-Allow-Origin", origin);
   }
@@ -395,7 +395,8 @@ async function initIoMaintenanceRefresh() {
 // rest
 
 app.post(`/init`, async (fe, api) => {
-  if (fe.headers.x_api_key !== API_KEY) api.send({error: `Unauthorised.`});
+  // note: allow `component` calls to access /init
+  if (![API_KEY, `component`].includes(fe.headers.x_api_key)) api.send({error: `Unauthorised.`});
   else api.send(
     await util.getRes({
       res: `ok`,
@@ -462,14 +463,15 @@ app.post(`/pull`, async (fe, api) => {
 
 app.post(`/load`, async (fe, api) => {
   const TYPES_LOADABLE_BY_COMPONENT = [
-    // todo: add any adhoc calls that are callable by `component`, which may be used by the public
+    // note: add any adhoc calls that are callable by `component`, which may be used by the public
+    `component_sample`
   ];
   
   if (
-    (fe.headers.x_api_key !== API_KEY) ||
-    (
-      TYPES_LOADABLE_BY_COMPONENT.includes(fe.body.type) &&
-      (fe.headers.x_api_key === `component`)
+    (fe.headers.x_api_key !== API_KEY) &&
+    !(
+      (fe.headers.x_api_key === `component`) &&
+      TYPES_LOADABLE_BY_COMPONENT.includes(fe.body.type)
     )
   ) api.send({error: `Unauthorised.`});
   else api.send(
