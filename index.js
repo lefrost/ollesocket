@@ -461,7 +461,17 @@ app.post(`/pull`, async (fe, api) => {
 });
 
 app.post(`/load`, async (fe, api) => {
-  if (fe.headers.x_api_key !== API_KEY) api.send({error: `Unauthorised.`});
+  const TYPES_LOADABLE_BY_COMPONENT = [
+    // todo: add any adhoc calls that are callable by `component`, which may be used by the public
+  ];
+  
+  if (
+    (fe.headers.x_api_key !== API_KEY) ||
+    (
+      TYPES_LOADABLE_BY_COMPONENT.includes(fe.body.type) &&
+      (fe.headers.x_api_key === `component`)
+    )
+  ) api.send({error: `Unauthorised.`});
   else api.send(
     processes.init().cache ? await adhoc.load(fe.body) : util.getWaitCacheRes()
   );
