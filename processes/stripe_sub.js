@@ -30,12 +30,6 @@ async function processStripeSubs(d) {
   try {
     // note: handle any stripe events that haven't already been handled from stripe webhook listener (checking of "if already handled" is done within utils->stripe.handleEevent() itself)
 
-    let users = await dataflow.getMany({
-      all: false,
-      type: `user`,
-      filters: []
-    }) || [];
-
     let latest_stripe_events = await stripe.getLatestEvents(latest_process_timestamp) || [];
 
     latest_process_timestamp = util.getTimestamp();

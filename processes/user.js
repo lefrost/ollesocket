@@ -108,7 +108,7 @@ async function processUsers(d) {
                 ...(matching_user_c.stripe_subs || []).filter(mus =>
                   !user_updated_stripe_subs.some(us =>
                     (us.customer_id === mus.customer_id) &&
-                    (us.customer_email === mus.customer_email) &&
+                    // (us.customer_email === mus.customer_email) && // note: don't use email to find matching stripe_sub, because a user may have changed their [lefrost product] account's and/or stripe account's email since their stripe_sub first started 
                     (us.price_id === mus.price_id) &&
                     (us.product_id === mus.product_id)
                   )

@@ -115,7 +115,7 @@ module.exports = {
             return;
           } else if ((matching_user.stripe_subs || []).some(s =>
             (s.customer_id === customer.id) &&
-            (s.customer_email === customer.email)
+            // (s.customer_email === customer.email) // note: don't use email to find matching stripe_sub, because a user may have changed their [lefrost product] account's and/or stripe account's email since their stripe_sub first started 
             (s.price_id === price.id) &&
             (s.product_id === product.id)
           )) {
