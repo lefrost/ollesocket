@@ -6,6 +6,7 @@ const stripe = require('stripe')(STRIPE_SECRET_KEY);
 
 let adhoc = require(`../controllers/adhoc`);
 let dataflow = require(`../controllers/dataflow`);
+let util = require("../utils/util");
 
 module.exports = {
   handleEvent: async (req, is_event_parsed) => {
@@ -133,7 +134,8 @@ module.exports = {
                   customer_id: customer.id,
                   customer_email: customer.email,
                   price_id: price.id,
-                  product_id: product.id
+                  product_id: product.id,
+                  timestamp: event.data.created || util.getTimestamp()
                 }
               ]
             }
