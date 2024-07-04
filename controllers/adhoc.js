@@ -121,7 +121,7 @@ async function loadUserAdd(d) {
 
         return {
           ...util.mapItem(`user_self`, matching_user, arrays, {}),
-          access_token
+          access_token_string: access_token.split(`_`)[1] || ``
         }
       }
     }
@@ -169,7 +169,7 @@ async function loadUserAdd(d) {
 
       return {
         ...util.mapItem(`user_self`, new_user, arrays, {}),
-        access_token
+        access_token_string: access_token.split(`_`)[1] || ``
       }
     } else {
       return null;
@@ -210,7 +210,7 @@ async function loadUserGenerateAccessToken(d) {
 async function loadUserLoginByAccessToken(d) {
   try {
     let user_id = d.user_id || ``;
-    let access_token = d.access_token || ``;
+    let access_token_string = d.access_token_string || ``;
 
     // tba (misc): called in frontend->callback/login_access_token
 
