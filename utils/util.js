@@ -7,6 +7,7 @@ var moment = require(`moment`);
 var moment_tz = require(`moment-timezone`);
 // var _ = require(`lodash`);
 
+let dataflow = require(`../controllers/dataflow`);
 let rest = require(`./rest`);
 
 const ITEM_TYPES = require(`../data/item_types.json`);
@@ -16,6 +17,14 @@ module.exports = {
     return crypto
       .randomBytes(length ? Math.floor(length / 2) : 20)
       .toString("hex");
+  },
+  generateAccessToken: () => {
+    try {
+      return `${module.exports.getTimestamp()}_${module.exports.generateId(20)}`;
+    } catch (e) {
+      console.log(e);
+      return ``;
+    }
   },
   getRandomNumber: (min, max) => {
     return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -331,7 +340,7 @@ module.exports = {
 
   getStructMetadataObj: (type, timestamp) => {
     try {
-      return {
+      let metadata_obj = {
         type: type || ``,
         add_timestamp: timestamp || module.exports.getTimestamp(),
         edit_timestamp: null,
@@ -340,6 +349,12 @@ module.exports = {
         flags: [],
         prev_gcloud_image_urls: []
       }
+
+      if (type === `user`) {
+        metadata_obj[`access_token`] = ``; // format: `<timestamp>_<string>`
+      }
+
+      return metadata_obj;
     } catch (e) {
       console.log(e);
       return null;
@@ -349,14 +364,33 @@ module.exports = {
   mapItem: (type, item, arrays, options) => {
     try {
       // note: used to map items from adhoc for processing and/or sending to frontend
-      // note: arrays is retrieved from adhoc->getMapArrays()
+      // note: arrays is retrieved from util->getMapArrays()
       // note: options{...}
+
+      if (!(
+        type &&
+        item
+      )) {
+        return null;
+      }
 
       let mapped_item = util.clone(item);
 
       switch (type) {
+        case `user_self`: {
+          // note: logged-in user object of itself
+          delete mapped_item.metadata;
+          delete mapped_item.cache_medata;
+          break;
+        }
         case `user`: {
-          // todo
+          // note: public-facing user object
+          delete mapped_item.timezone;
+          delete mapped_item.connections;
+          delete mapped_item.stripe_subs;
+          delete mapped_item.settings;
+          delete mapped_item.metadata;
+          delete mapped_item.cache_metadata;
           break;
         }
       }
@@ -365,6 +399,34 @@ module.exports = {
     } catch (e) {
       console.log(e);
       return null;
+    }
+  },
+
+  getMapArrays: async () => {
+    try {
+      // get array-type obj of items with arrays of every item type required in util->mapItem()
+      
+      var arrays = {};
+      let array_types = [`user`];
+
+      for (let array_type of array_types) {
+        let MATCHING_ARRAY_ITEM_TYPE = ITEM_TYPES.find(T => T.code === array_type) || null;
+
+        if (MATCHING_ARRAY_ITEM_TYPE) {
+          arrays[MATCHING_ARRAY_ITEM_TYPE.plural_code] = (await dataflow.getMany({
+            all: false,
+            type: MATCHING_ARRAY_ITEM_TYPE.code || ``,
+            filters: []
+          }) || []).filter(i =>
+            (i.metadata || {}).status === `active`
+          ) || [];
+        }
+      }
+
+      return arrays || {};
+    } catch (e) {
+      console.log(e);
+      return {};
     }
   },
 

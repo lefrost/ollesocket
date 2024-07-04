@@ -32,8 +32,20 @@ async function load(d) {
         data = await loadUserAdd(obj);
         break;
       }
+      case `user_edit`: {
+        data = await loadUserEdit(obj);
+        break;
+      }
       case `user_edit_image`: {
         data = await loadUserEditImage(obj);
+        break;
+      }
+      case `user_generate_access_token`: {
+        data = await loadUserGenerateAccessToken(obj);
+        break;
+      }
+      case `user_login_by_access_token`: {
+        data = await loadUserLoginByAccessToken(obj);
         break;
       }
       case `component_sample`: {
@@ -60,6 +72,8 @@ async function load(d) {
 
 async function loadUserAdd(d) {
   try {
+    var arrays = util.getMapArrays() || {};
+
     const ENFORCE_EMAIL_SIGNUP_ONLY = true;
 
     let name = d.name || ``;
@@ -71,9 +85,6 @@ async function loadUserAdd(d) {
 
     if (!(
       name &&
-      icon_image_obj &&
-      icon_image_obj.value &&
-      icon_image_obj.format &&
       (connections.length >= 1) &&
       (
         ENFORCE_EMAIL_SIGNUP_ONLY ?
@@ -85,6 +96,34 @@ async function loadUserAdd(d) {
       )
     )) {
       return null;
+    }
+    
+    for (let connection of connections.slice()) {
+      let matching_user = await dataflow.get({
+        all: false,
+        type: `user`,
+        filters: [
+          {
+            prop: `connections`,
+            value: {
+              type: connection.type,
+              code: connection.code
+            } 
+          }
+        ]
+      }) || null;
+
+      if (matching_user && matching_user.id) {
+        // note: if matching user already exists, simply use the existing matching user , and don't add any new user
+        let access_token = await loadUserGenerateAccessToken({
+          user_id: matching_user.id
+        }) || ``;
+
+        return {
+          ...util.mapItem(`user_self`, matching_user, arrays, {}),
+          access_token
+        }
+      }
     }
 
     let new_user = (await dataflow.add({
@@ -100,11 +139,17 @@ async function loadUserAdd(d) {
       }
     }) || {}).data || null;
 
-    if (new_user && new_user.id) {
+    if (
+      new_user &&
+      new_user.id &&
+      icon_image_obj &&
+      icon_image_obj.value &&
+      icon_image_obj.format
+    ) {
       let edit_image_res = await loadUserEditImage({
         image_value: icon_image_obj.value,
         image_format: icon_image_obj.format
-      }) || ``
+      }) || ``;
 
       if (edit_image_res === `done`) {
         let updated_user = await dataflow.get({
@@ -117,9 +162,59 @@ async function loadUserAdd(d) {
           new_user = util.clone(updated_user);
         }
       }
-    }
 
-    return new_user || null;
+      let access_token = await loadUserGenerateAccessToken({
+        user_id: matching_user.id
+      }) || ``;
+
+      return {
+        ...util.mapItem(`user_self`, new_user, arrays, {}),
+        access_token
+      }
+    } else {
+      return null;
+    }
+  } catch (e) {
+    console.log(e);
+    return null;
+  }
+}
+
+async function loadUserEdit(d) {
+  try {
+    let user_id = d.user_id || ``;
+    let edit_obj = d.edit_obj || {};
+
+    // tba (misc): call in frontend->/settings when editing user
+
+    return null;
+  } catch (e) {
+    console.log(e);
+    return null;
+  }
+}
+
+async function loadUserGenerateAccessToken(d) {
+  try {
+    let user_id = d.user_id || ``;
+    
+    // tba (misc): called in loadUserAdd(), edits user.metadata.access_token
+    
+    return ``;
+  } catch (e) {
+    console.log(e);
+    return ``;
+  }
+}
+
+async function loadUserLoginByAccessToken(d) {
+  try {
+    let user_id = d.user_id || ``;
+    let access_token = d.access_token || ``;
+
+    // tba (misc): called in frontend->callback/login_access_token
+
+    return null;
   } catch (e) {
     console.log(e);
     return null;
@@ -205,31 +300,3 @@ async function loadComponentSample(d) {
 //     return null;
 //   }
 // }
-
-async function getMapArrays() {
-  try {
-    // get array-type obj of items with arrays of every item type required in util->mapItem()
-    
-    var arrays = {};
-    let array_types = [`user`];
-
-    for (let array_type of array_types) {
-      let MATCHING_ARRAY_ITEM_TYPE = ITEM_TYPES.find(T => T.code === array_type) || null;
-
-      if (MATCHING_ARRAY_ITEM_TYPE) {
-        arrays[MATCHING_ARRAY_ITEM_TYPE.plural_code] = (await dataflow.getMany({
-          all: false,
-          type: MATCHING_ARRAY_ITEM_TYPE.code || ``,
-          filters: []
-        }) || []).filter(i =>
-          (i.metadata || {}).status === `active`
-        ) || [];
-      }
-    }
-
-    return arrays || {};
-  } catch (e) {
-    console.log(e);
-    return {};
-  }
-}
