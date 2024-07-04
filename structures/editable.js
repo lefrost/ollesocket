@@ -36,7 +36,8 @@ async function getStatStruct(d) {
       in_database: true,
       attributes: {
         editables: [
-          `data`
+          `data`,
+          `metadata`
         ],
         numerics: [],
         booleans: [],
@@ -61,7 +62,8 @@ async function getUserStruct(d) {
           `timezone`,
           `connections`,
           `stripe_subs`,
-          `settings`
+          `settings`,
+          `metadata`
         ],
         numerics: [],
         booleans: [],

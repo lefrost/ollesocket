@@ -182,12 +182,31 @@ async function loadUserAdd(d) {
 
 async function loadUserEdit(d) {
   try {
+    var arrays = util.getMapArrays() || {};
+
     let user_id = d.user_id || ``;
     let edit_obj = d.edit_obj || {};
 
-    // tba (misc): call in frontend->/settings when editing user
+    if (!(
+      user_id &&
+      edit_obj
+    )) {
+      return null;
+    }
+    
+    let updated_user = (await dataflow.edit({
+      type: `user`,
+      obj: {
+        id: user_id,
+        ...(edit_obj || {})
+      }
+    }) || {}).data || null;
 
-    return null;
+    if (!(updated_user && updated_user.id)) {
+      return null;
+    }
+
+    return util.mapItem(`user_self`, updated_user, arrays, {}) || null;
   } catch (e) {
     console.log(e);
     return null;
@@ -197,10 +216,37 @@ async function loadUserEdit(d) {
 async function loadUserGenerateAccessToken(d) {
   try {
     let user_id = d.user_id || ``;
+
+    if (!user_id) {
+      return ``;
+    }
+
+    let matching_user = await dataflow.get({
+      all: false,
+      type: `user`,
+      id: user_id
+    }) || null;
+
+    if (!(matching_user && matching_user.id)) {
+      return ``;
+    }
     
-    // tba (misc): called in loadUserAdd(), edits user.metadata.access_token
-    
-    return ``;
+    let updated_user = await loadUserEdit({
+      user_id,
+      edit_obj: {
+        metadata: {
+          ...matching_user.metadata,
+          access_token: util.generateAccessToken() || ``
+        }
+      }
+    }) || null;
+
+    if (!(updated_user && updated_user.id)) {
+      return ``;
+    }
+
+    // note: return access_token_string, rather than entire access_token, given that access_token format is `<access_token_timestamp>_<access_token_string>`
+    return ((updated_user.metadata || {}).access_token || ``).split(`_`)[1] || ``;
   } catch (e) {
     console.log(e);
     return ``;
@@ -209,12 +255,52 @@ async function loadUserGenerateAccessToken(d) {
 
 async function loadUserLoginByAccessToken(d) {
   try {
+    var arrays = util.getMapArrays() || {};
+
     let user_id = d.user_id || ``;
     let access_token_string = d.access_token_string || ``;
 
-    // tba (misc): called in frontend->callback/login_access_token
+    if (!(
+      user_id &&
+      access_token_string
+    )) {
+      return null;
+    }
 
-    return null;
+    let matching_user = await dataflow.get({
+      all: false,
+      type: `user`,
+      id: user_id
+    }) || null;
+
+    if (
+      matching_user &&
+      matching_user.id
+    ) {
+      let access_token = (matching_user.metadata || {}).access_token || ``;
+
+      if (!access_token) {
+        return null;
+      }
+
+      let access_token_frags = access_token.split(`_`) || [];
+      let access_token_timestamp = access_token_frags[0] || null;
+      let access_token_string = access_token_frags[1] || ``;
+
+      let seconds_since_token_timestamp = util.getTimestampDiff(access_token_timestamp, util.getTimestamp(), `seconds`);
+
+      if (
+        (seconds_since_token_timestamp >= 0) &&
+        (seconds_since_token_timestamp <= 30) &&
+        (access_token_string === access_token_string)
+      ) {
+        return util.mapItem(`user_self`, matching_user, arrays, {});
+      } else {
+        return null;
+      }
+    } else {
+      return null;
+    }
   } catch (e) {
     console.log(e);
     return null;
