@@ -1,4 +1,3 @@
-let cache = require(`../utils/cache`);
 let dataflow = require(`./dataflow`);
 let gcloud = require(`../utils/gcloud`);
 let util = require(`../utils/util`);
@@ -72,7 +71,7 @@ async function load(d) {
 
 async function loadUserAdd(d) {
   try {
-    var arrays = util.getMapArrays() || {};
+    var arrays = await getMapArrays() || {};
 
     const ENFORCE_EMAIL_SIGNUP_ONLY = true;
 
@@ -182,7 +181,7 @@ async function loadUserAdd(d) {
 
 async function loadUserEdit(d) {
   try {
-    var arrays = util.getMapArrays() || {};
+    var arrays = await getMapArrays() || {};
 
     let user_id = d.user_id || ``;
     let edit_obj = d.edit_obj || {};
@@ -255,7 +254,7 @@ async function loadUserGenerateAccessToken(d) {
 
 async function loadUserLoginByAccessToken(d) {
   try {
-    var arrays = util.getMapArrays() || {};
+    var arrays = await getMapArrays() || {};
 
     let user_id = d.user_id || ``;
     let access_token_string = d.access_token_string || ``;
@@ -386,3 +385,31 @@ async function loadComponentSample(d) {
 //     return null;
 //   }
 // }
+
+async function getMapArrays() {
+  try {
+    // get array-type obj of items with arrays of every item type required in util->mapItem()
+    
+    var arrays = {};
+    let array_types = [`user`];
+
+    for (let array_type of array_types) {
+      let MATCHING_ARRAY_ITEM_TYPE = ITEM_TYPES.find(T => T.code === array_type) || null;
+
+      if (MATCHING_ARRAY_ITEM_TYPE) {
+        arrays[MATCHING_ARRAY_ITEM_TYPE.plural_code] = (await dataflow.getMany({
+          all: false,
+          type: MATCHING_ARRAY_ITEM_TYPE.code || ``,
+          filters: []
+        }) || []).filter(i =>
+          (i.metadata || {}).status === `active`
+        ) || [];
+      }
+    }
+
+    return arrays || {};
+  } catch (e) {
+    console.log(e);
+    return {};
+  }
+}

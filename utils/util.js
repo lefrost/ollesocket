@@ -7,7 +7,6 @@ var moment = require(`moment`);
 var moment_tz = require(`moment-timezone`);
 // var _ = require(`lodash`);
 
-let dataflow = require(`../controllers/dataflow`);
 let rest = require(`./rest`);
 
 const ITEM_TYPES = require(`../data/item_types.json`);
@@ -374,7 +373,7 @@ module.exports = {
         return null;
       }
 
-      let mapped_item = util.clone(item);
+      let mapped_item = module.exports.clone(item);
 
       switch (type) {
         case `user_self`: {
@@ -399,34 +398,6 @@ module.exports = {
     } catch (e) {
       console.log(e);
       return null;
-    }
-  },
-
-  getMapArrays: async () => {
-    try {
-      // get array-type obj of items with arrays of every item type required in util->mapItem()
-      
-      var arrays = {};
-      let array_types = [`user`];
-
-      for (let array_type of array_types) {
-        let MATCHING_ARRAY_ITEM_TYPE = ITEM_TYPES.find(T => T.code === array_type) || null;
-
-        if (MATCHING_ARRAY_ITEM_TYPE) {
-          arrays[MATCHING_ARRAY_ITEM_TYPE.plural_code] = (await dataflow.getMany({
-            all: false,
-            type: MATCHING_ARRAY_ITEM_TYPE.code || ``,
-            filters: []
-          }) || []).filter(i =>
-            (i.metadata || {}).status === `active`
-          ) || [];
-        }
-      }
-
-      return arrays || {};
-    } catch (e) {
-      console.log(e);
-      return {};
     }
   },
 
