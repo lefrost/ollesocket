@@ -59,8 +59,8 @@ module.exports = {
             return;
           }
 
-          const price_id = customer.line_items.data[0].price.id;
-          const product_id = customer.line_items.data[0].price.product;
+          const price_id = session.line_items.data[0].price.id;
+          const product_id = session.line_items.data[0].price.product;
           const customer = await stripe.customers.retrieve(session.customer);
           
           if (!(
@@ -135,7 +135,7 @@ module.exports = {
                   customer_email: customer.email,
                   price_id: price.id,
                   product_id: product.id,
-                  timestamp: event.data.created || util.getTimestamp()
+                  timestamp: event.created || util.getTimestamp()
                 }
               ]
             }
@@ -143,6 +143,7 @@ module.exports = {
 
           break;
         }
+
         case `customer.subscription.deleted`: {
           const subscription = await stripe.subscriptions.retrieve(event.data.object.id);
 
@@ -189,8 +190,7 @@ module.exports = {
               {
                 prop: `stripe_subs`,
                 value: {
-                  type: `customer_id`,
-                  code: subscription.customer
+                  customer_id: subscription.customer,
                 },
                 condition: `some`,
                 options: []
@@ -200,9 +200,16 @@ module.exports = {
 
           if (!(
             matching_user &&
-            matching_user.id
+            matching_user.id &&
+            (matching_user.stripe_subs || []).some(s =>
+              (s.customer_id === subscription.customer) &&
+              prices.some(p =>
+                p.id === s.price_id
+              ) &&
+              (s.timestamp <= event.created) // note: only del matching stripe subs that were created *before* the "del" event
+            )
           )) {
-            console.log(`stripe.handleEvent - checkout.session.completed - no matching user found`);
+            console.log(`stripe.handleEvent - checkout.session.deleted - no matching user found`);
             return;
           }  else if (!(matching_user.stripe_subs || []).some(s =>
             (s.customer_id === subscription.customer) &&
@@ -210,7 +217,7 @@ module.exports = {
               p.id === s.price_id
             )
           )) {
-            console.log(`stripe.handleEvent - checkout.session.completed - matching user stripe_sub already deleted`);
+            console.log(`stripe.handleEvent - checkout.session.deleted - matching user stripe_sub already deleted`);
             return;
           }
 
@@ -223,7 +230,8 @@ module.exports = {
                   (s.customer_id === subscription.customer) &&
                   prices.some(p =>
                     p.id === s.price_id
-                  )
+                  ) &&
+                  (s.timestamp <= event.created)
                 )
               ) || []
             }
@@ -240,6 +248,9 @@ module.exports = {
 
   getLatestEvents: async (earliest_timestamp) => {
     try {
+      let timestamp = util.getTimestamp();
+      let timestamp_24h_ago = util.alterTimestamp(`subtract`, 24, `hours`, timestamp);
+
       let latest_events = ((await stripe.events.list({
         types: [`checkout.session.completed`, `customer.subscription.deleted`],
         limit: 20
@@ -253,7 +264,8 @@ module.exports = {
 
       if (earliest_timestamp) {
         latest_events = latest_events.filter(e =>
-          (e.created >= earliest_timestamp)
+          (e.created >= earliest_timestamp) &&
+          (e.created >= timestamp_24h_ago)
         ) || [];
       }
 

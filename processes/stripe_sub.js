@@ -30,7 +30,12 @@ async function processStripeSubs(d) {
   try {
     // note: handle any stripe events that haven't already been handled from stripe webhook listener (checking of "if already handled" is done within utils->stripe.handleEevent() itself)
 
-    let latest_stripe_events = await stripe.getLatestEvents(latest_process_timestamp) || [];
+    let latest_stripe_events = (await stripe.getLatestEvents(latest_process_timestamp) || []).sort((a, b) =>
+      a.created - b.created // note: sort in ascending order
+    );
+
+    console.log(`test: latest_stripe_events`);
+    console.log(latest_stripe_events);
 
     latest_process_timestamp = util.getTimestamp();
 
