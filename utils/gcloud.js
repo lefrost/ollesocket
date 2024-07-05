@@ -38,7 +38,13 @@ module.exports = {
           resolve(null);
         } else {
           let buffer_stream = new stream.PassThrough();
-          buffer_stream.end(Buffer.from(image_base64, `base64`));
+          buffer_stream.end(
+            Buffer.from(
+              // note: remove `data:image/<image_format>;base64,` portion of base64 string when sending into buffer; ref - https://stackoverflow.com/a/74250660/8919391
+              (image_base64 || ``).split(`;base64,`).pop(),
+              `base64`
+              )
+          );
   
           let gcloud_file_path = `${(API_TYPE === `dev`) ? `dev` : `prod`}/images/${directory_name}/${file_name}.${image_extension}`;
   
