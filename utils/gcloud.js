@@ -49,8 +49,6 @@ module.exports = {
           let gcloud_file_path = `${(API_TYPE === `dev`) ? `dev` : `prod`}/images/${directory_name}/${file_name}.${image_extension}`;
   
           let file = gcloud_bucket.file(gcloud_file_path);
-
-          // tba (misc): twix buffer_stream.pipe and/or file.createWriteStream implementation to upload image onto gcloud using base64 --- base64 string appears to be correct (see "test: icon_image_bas64" comment in adhoc.js for proof), hence the issue as to why images once uploaded to gcloud are blank likely lies here
   
           buffer_stream.pipe(
             file.createWriteStream({

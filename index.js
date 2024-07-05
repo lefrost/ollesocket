@@ -504,6 +504,8 @@ app.post(`/enter`, async (fe, api) => {
 
 app.post(`/stripe`, express.json({type: 'application/json'}), async (fe, api) => {
   try {
+    // tba (stripe): /stripe webhook seems to be unresponsive to immediate stripe events, possibly might not be receiving the events at all; fix to ensure that webhook here actually receives those events, and can handle them as needed
+
     // note: do `stripe listen --forward-to localhost:3001/stripe` to start listening to stripe events
     await stripe.handleEvent(fe, false);
     
