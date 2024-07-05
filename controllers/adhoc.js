@@ -163,7 +163,7 @@ async function loadUserAdd(d) {
       }
 
       let access_token = await loadUserGenerateAccessToken({
-        user_id: matching_user.id
+        user_id: new_user.id
       }) || ``;
 
       return {
@@ -229,23 +229,26 @@ async function loadUserGenerateAccessToken(d) {
     if (!(matching_user && matching_user.id)) {
       return ``;
     }
-    
-    let updated_user = await loadUserEdit({
-      user_id,
-      edit_obj: {
+
+    let matching_user_c = util.clone(matching_user);
+
+    let updated_user = (await dataflow.edit({
+      type: `user`,
+      obj: {
+        id: matching_user_c.id,
         metadata: {
-          ...matching_user.metadata,
+          ...matching_user_c.metadata,
           access_token: util.generateAccessToken() || ``
         }
       }
-    }) || null;
+    }) || {}).data || null;
 
     if (!(updated_user && updated_user.id)) {
       return ``;
     }
 
     // note: return access_token_string, rather than entire access_token, given that access_token format is `<access_token_timestamp>_<access_token_string>`
-    return ((updated_user.metadata || {}).access_token || ``).split(`_`)[1] || ``;
+    return (updated_user.metadata || {}).access_token || ``;
   } catch (e) {
     console.log(e);
     return ``;
