@@ -345,11 +345,14 @@ module.exports = {
         edit_timestamp: null,
         status: `active`,
         issues: [],
-        flags: [],
-        prev_gcloud_image_urls: []
+        flags: []
       }
 
-      if (type === `user`) {
+      if ([`user`].includes(type)) {
+        metadata_obj[`prev_gcloud_image_urls`] = []
+      }
+
+      if ([`user`].includes(type)) {
         metadata_obj[`access_token`] = ``; // format: `<timestamp>_<string>`
       }
 
