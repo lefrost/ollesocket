@@ -407,31 +407,37 @@ module.exports = {
         return null;
       }
 
-      // ref: get online image with axios, response type has to be set to `arraybuffer` - https://stackoverflow.com/a/52648030/8919391
-      let img = await rest.get({
+      // ref: get online image with axios, response type has to be set to `arraybuffer` - https://stackoverflow.com/a/52648030/8919391, https://stackoverflow.com/a/47567280/8919391, https://stackoverflow.com/a/67629456/8919391
+      let res = await rest.get({
+        all: true,
         url: img_url,
         headers: {
           responseType: `arraybuffer`
         }
       });
 
+      let res_content_type = (res && res.headers) ?
+        res.headers.get(`content-type`) :
+        ``;
+
       if (!(
-        img &&
-        img.data
+        res &&
+        res.data &&
+        res_content_type
       )) {
         return null;
       }
 
-      return Buffer.from(img.data).toString(`base64`) || ``;
+      return `data:${res_content_type};base64,${Buffer.from(res.data).toString(`base64`) || ``}`;
     } catch (e) {
       console.log(e);
       return null;
     }
   },
 
-  getImageExtensionFromBase64: async (img_base64) => {
+  getImageExtensionFromBase64: (img_base64) => {
     try {
-      if (!img_base_64) {
+      if (!img_base64) {
         return ``;
       }
 

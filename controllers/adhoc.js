@@ -145,9 +145,12 @@ async function loadUserAdd(d) {
       icon_image_obj.value &&
       icon_image_obj.format
     ) {
+      let new_user_c = util.clone(new_user);
+
       let edit_image_res = await loadUserEditImage({
+        user_id: new_user_c.id,
         image_value: icon_image_obj.value,
-        image_format: icon_image_obj.format
+        image_format: icon_image_obj.format,
       }) || ``;
 
       if (edit_image_res === `done`) {
@@ -313,14 +316,13 @@ async function loadUserEditImage(d) {
   try {
     // note: handle `user.icon_image_url` based on `d.image_value/image_format<'url', 'base64'>` --- need to call util.imgUrlToBase64() if image_format is `url`
 
+    let user_id = d.user_id || ``;
     let image_value = d.image_value || ``;
     let image_format = d.image_format || ``;
-    let user_id = d.user_id || ``;
-    
     if (!(
+      user_id &&
       image_value &&
-      image_format &&
-      user_id
+      image_format
     )) {
       return `error`;
     }
@@ -330,8 +332,11 @@ async function loadUserEditImage(d) {
     if (image_format === `base64`) {
       icon_image_base64 = image_value || ``;
     } else if (image_format === `url`) {
-      icon_image_base64 = util.imgUrlToBase64(image_value) || ``;
+      icon_image_base64 = await util.imgUrlToBase64(image_value) || ``;
     }
+
+    // console.log(`test: icon_image_base64`);
+    // console.log(icon_image_base64);
 
     let icon_image_extension = util.getImageExtensionFromBase64(icon_image_base64) || ``;
 
