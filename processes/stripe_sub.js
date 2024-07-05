@@ -34,9 +34,6 @@ async function processStripeSubs(d) {
       a.created - b.created // note: sort in ascending order
     );
 
-    console.log(`test: latest_stripe_events`);
-    console.log(latest_stripe_events);
-
     latest_process_timestamp = util.getTimestamp();
 
     for (let event of latest_stripe_events) {

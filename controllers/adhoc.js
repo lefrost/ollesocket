@@ -335,9 +335,6 @@ async function loadUserEditImage(d) {
       icon_image_base64 = await util.imgUrlToBase64(image_value) || ``;
     }
 
-    // console.log(`test: icon_image_base64`);
-    // console.log(icon_image_base64);
-
     let icon_image_extension = util.getImageExtensionFromBase64(icon_image_base64) || ``;
 
     // note: upload user's icon image to google cloud, retrieve the resulting image url, and set that image url in mongodb

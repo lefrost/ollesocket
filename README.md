@@ -8,3 +8,4 @@
 - [google cloud](https://cloud.google.com/) integration for file/image storage.
 - [puppeteer](https://pptr.dev) support, [buildpack](https://github.com/jontewks/puppeteer-heroku-buildpack) for usage on heroku. [alternative solution](https://stackoverflow.com/a/74858297/8919391) for smaller slug size.
 - add [data/gcloud_service_account_key.json](https://dev.to/kamalhossain/upload-file-to-google-cloud-storage-from-nodejs-server-5cdg) file to enable google cloud functions.
+- use `stripe listen --forward-to localhost:<port>/stripe` in separate terminal to listen to stripe webhook events at `/stripe`.
