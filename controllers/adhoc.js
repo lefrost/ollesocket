@@ -356,7 +356,7 @@ async function loadUserEditImage(d) {
       }
     });
 
-    return `error`;
+    return `done`;
   } catch (e) {
     console.log(e);
     return `error`;
