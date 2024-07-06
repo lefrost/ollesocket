@@ -24,7 +24,7 @@ let rest = require(`./utils/rest`);
 let stripe = require(`./utils/stripe`);
 let util = require(`./utils/util`);
 
-let port = process.env.PORT || 3001;
+let PORT = process.env.PORT || 3001;
 let API_KEY = process.env.API_KEY;
 let PROJECT_LINK = process.env.PROJECT_LINK;
 let PROJECT_NAME = process.env.PROJECT_NAME;
@@ -57,8 +57,8 @@ app.use(
   })
 );
 
-const server = app.listen(port, async () => {
-  console.log(`up on http://localhost:${port}`);
+const server = app.listen(PORT, async () => {
+  console.log(`up on http://localhost:${PORT}`);
   await mongo.connect();
   await gcloud.connect();
   await processes.start({ name: `cache`, payload: {} }); // note: await cache proces before any others
@@ -71,7 +71,7 @@ const server = app.listen(port, async () => {
 const io = require(`socket.io`)(server, {
   // cors: {
   //   origin: [
-  //     `http://localhost:3000`,
+  //     `http://localhost:${PORT}`,
   //     `https://www.${PROJECT_LINK}`,
   //     `https://${PROJECT_LINK}`,
   //   ],
@@ -84,7 +84,7 @@ app.use(function (req, res, next) {
     next();
   } else {
     // let auth_origins = [
-    //   `http://localhost:3000`,
+    //   `http://localhost:${PORT}`,
     //   `https://www.${PROJECT_LINK}`,
     //   `https://${PROJECT_LINK}`,
     // ];
