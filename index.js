@@ -31,11 +31,11 @@ let PROJECT_NAME = process.env.PROJECT_NAME;
 
 let jobs = [];
 let maintenance_timestamp = null;
-let stats = {
-  enter_total_count: 0,
-  enter_user_count: 0,
-  enter_guest_count: 0,
-}
+// let stats = {
+//   enter_total_count: 0,
+//   enter_user_count: 0,
+//   enter_guest_count: 0,
+// }
 
 // ---- app & server
 
@@ -615,29 +615,29 @@ app.post(`/load`, async (fe, api) => {
   }
 });
 
-app.post(`/enter`, async (fe, api) => {
-  try {
-    let user_id = fe.body.user_id || ``;
+// app.post(`/enter`, async (fe, api) => {
+//   try {
+//     let user_id = fe.body.user_id || ``;
 
-    stats.enter_total_count += 1;
+//     stats.enter_total_count += 1;
 
-    if (user_id) {
-      stats.enter_user_count += 1;
-    } else {
-      stats.enter_guest_count += 1;
-    }
+//     if (user_id) {
+//       stats.enter_user_count += 1;
+//     } else {
+//       stats.enter_guest_count += 1;
+//     }
 
-    api.send({
-      data: `done`
-    });
-  } catch (e) {
-    console.log(e);
+//     api.send({
+//       data: `done`
+//     });
+//   } catch (e) {
+//     console.log(e);
     
-    api.send({
-      data: `error`
-    });
-  }
-});
+//     api.send({
+//       data: `error`
+//     });
+//   }
+// });
 
 app.post(`/stripe`, async (fe, api) => {
   try {
@@ -658,59 +658,59 @@ app.post(`/stripe`, async (fe, api) => {
 
 // stats
 
-statsRefresh();
+// statsRefresh();
 
-async function statsRefresh() {
-  try {
-    await util.wait(60);
+// async function statsRefresh() {
+//   try {
+//     await util.wait(60);
 
-    let temp_stats = util.clone(stats);
+//     let temp_stats = util.clone(stats);
 
-    stats = {
-      enter_total_count: 0,
-      enter_user_count: 0,
-      enter_guest_count: 0,
-    }
+//     stats = {
+//       enter_total_count: 0,
+//       enter_user_count: 0,
+//       enter_guest_count: 0,
+//     }
 
-    let enter_stat = await dataflow.get({
-      all: false,
-      type: `stat`,
-      filters: [
-        {
-          prop: `code`,
-          value: `enter`,
-          condition: `match`,
-          options: []
-        }
-      ]
-    }) || null;
+//     let enter_stat = await dataflow.get({
+//       all: false,
+//       type: `stat`,
+//       filters: [
+//         {
+//           prop: `code`,
+//           value: `enter`,
+//           condition: `match`,
+//           options: []
+//         }
+//       ]
+//     }) || null;
 
-    if (
-      enter_stat &&
-      enter_stat.id
-    ) {
-      let enter_stat_c = util.clone(enter_stat);
+//     if (
+//       enter_stat &&
+//       enter_stat.id
+//     ) {
+//       let enter_stat_c = util.clone(enter_stat);
 
-      let updated_enter_stat_data = enter_stat_c.data || {};
+//       let updated_enter_stat_data = enter_stat_c.data || {};
 
-      updated_enter_stat_data.total_count = (updated_enter_stat_data.total_count || 0) + (temp_stats.enter_total_count || 0);
-      updated_enter_stat_data.user_count = (updated_enter_stat_data.user_count || 0) + (temp_stats.enter_user_count || 0);
-      updated_enter_stat_data.guest_count = (updated_enter_stat_data.guest_count || 0) + (temp_stats.enter_guest_count || 0);
+//       updated_enter_stat_data.total_count = (updated_enter_stat_data.total_count || 0) + (temp_stats.enter_total_count || 0);
+//       updated_enter_stat_data.user_count = (updated_enter_stat_data.user_count || 0) + (temp_stats.enter_user_count || 0);
+//       updated_enter_stat_data.guest_count = (updated_enter_stat_data.guest_count || 0) + (temp_stats.enter_guest_count || 0);
 
-      await dataflow.edit({
-        type: `stat`,
-        obj: {
-          id: enter_stat.id,
-          data: updated_enter_stat_data || {}
-        }
-      });
-    }
-  } catch (e) {
-    console.log(e);
-  } finally {
-    statsRefresh();
-  }
-}
+//       await dataflow.edit({
+//         type: `stat`,
+//         obj: {
+//           id: enter_stat.id,
+//           data: updated_enter_stat_data || {}
+//         }
+//       });
+//     }
+//   } catch (e) {
+//     console.log(e);
+//   } finally {
+//     statsRefresh();
+//   }
+// }
 
 // maintenace timestamp
 
@@ -825,17 +825,25 @@ app.get(`/cache/:type`, async (fe, api) => {
 //   }
 // });
 
-app.get(`/add_init_stats`, async (fe, api) => {
-  try {
-    // tba
-  } catch (e) {
-    console.log(e);
+// app.get(`/add_init_stats`, async (fe, api) => {
+//   try {
+//     await dataflow.add({
+//       type: `stat`,
+//       code: `enter`,
+//       data: {
+//         total_count: 0,
+//         guest_count: 0,
+//         user_count: 0
+//       }
+//     });
+//   } catch (e) {
+//     console.log(e);
 
-    api.send({
-      data: `error`
-    });
-  }
-});
+//     api.send({
+//       data: `error`
+//     });
+//   }
+// });
 
 // ---- discord bot
 
