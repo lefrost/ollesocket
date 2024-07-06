@@ -13,10 +13,16 @@ const ITEM_TYPES = require(`../data/item_types.json`);
 
 module.exports = {
   generateId: (length) => {
-    return crypto
-      .randomBytes(length ? Math.floor(length / 2) : 20)
-      .toString("hex");
+    try {
+      return crypto
+        .randomBytes(length ? Math.floor(length / 2) : 20)
+        .toString("hex");
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
   },
+  
   generateAccessToken: () => {
     try {
       return `${module.exports.getTimestamp()}_${module.exports.generateId(20)}`;
@@ -25,9 +31,16 @@ module.exports = {
       return ``;
     }
   },
+
   getRandomNumber: (min, max) => {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
+    try {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
   },
+
   getWeekdayOfTimestamp: (timestamp) => {
     try {
       let weekdays = [
@@ -45,12 +58,25 @@ module.exports = {
       return ``;
     }
   },
+
   getTimestamp: () => {
-    return moment.utc().unix();
+    try {
+      return moment.utc().unix();
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
   },
+
   convertToTimestamp: (input, format) => {
-    return moment.utc(input, format).unix();
+    try {
+      return moment.utc(input, format).unix();
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
   },
+
   datetimeToTimestamp: (d) => {
     // new
     try {
@@ -63,6 +89,7 @@ module.exports = {
       return null;
     }
   },
+
   timestampToDatetime: (d) => {
     // new
     try {
@@ -76,134 +103,230 @@ module.exports = {
       return null;
     }
   },
-  formatTimestamp: (timestamp, format) => {
-    return moment.unix(timestamp).utc().format(format);
-  },
-  formatDatetime: (datetime, format, timezone) => {
-    // deprecated
-    if (!timezone) {
-      timezone = `UTC`;
-    }
-    return moment_tz.utc(datetime).tz(timezone).format(format);
-  },
-  getTimestampDiff: (start, end, format) => {
-    let diff = moment.duration(moment.unix(end).diff(moment.unix(start)));
-    // let diff = moment.duration(start.diff(end));
 
-    switch (format) {
-      case `days`:
-        return diff.asDays();
-      case `hours`:
-        return diff.asHours();
-      case `minutes`:
-        return diff.asMinutes();
-      case `seconds`:
-      default:
-        return diff.asSeconds();
-    }
-  },
-  alterTimestamp: (operation, offset, type, timestamp) => {
-    switch (operation) {
-      case "add":
-        return moment
-          .utc(timestamp, `X`)
-          .add(offset || 0, type || `seconds`)
-          .unix();
-      case "subtract":
-        return moment
-          .utc(timestamp, `X`)
-          .subtract(offset || 0, type || `seconds`)
-          .unix();
-      default:
-        return timestamp;
-    }
-  },
-  isEmptyObj: (obj) => {
-    for (let i in obj) return false;
-    return true;
-  },
-  isNumeric: (val) => {
-    return /^-?\d+$/.test(val);
-  },
-  isUrl: (val) => {
-    let url;
+  formatTimestamp: (timestamp, format) => {
     try {
+      return moment.unix(timestamp).utc().format(format);
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
+  },
+
+  formatDatetime: (datetime, format, timezone) => {
+    try {
+      // deprecated
+      if (!timezone) {
+        timezone = `UTC`;
+      }
+      return moment_tz.utc(datetime).tz(timezone).format(format);
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
+  },
+
+  getTimestampDiff: (start, end, format) => {
+    try {
+      let diff = moment.duration(moment.unix(end).diff(moment.unix(start)));
+      // let diff = moment.duration(start.diff(end));
+  
+      switch (format) {
+        case `days`:
+          return diff.asDays();
+        case `hours`:
+          return diff.asHours();
+        case `minutes`:
+          return diff.asMinutes();
+        case `seconds`:
+        default:
+          return diff.asSeconds();
+      }
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
+  },
+
+  alterTimestamp: (operation, offset, type, timestamp) => {
+    try {
+      switch (operation) {
+        case "add":
+          return moment
+            .utc(timestamp, `X`)
+            .add(offset || 0, type || `seconds`)
+            .unix();
+        case "subtract":
+          return moment
+            .utc(timestamp, `X`)
+            .subtract(offset || 0, type || `seconds`)
+            .unix();
+        default:
+          return timestamp;
+      }
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
+  },
+
+  isEmptyObj: (obj) => {
+    try {
+      for (let i in obj) return false;
+      return true;
+    } catch (e) {
+      console.log(e);
+      return false;
+    }
+  },
+
+  isNumeric: (val) => {
+    try {
+      return /^-?\d+$/.test(val);
+    } catch (e) {
+      console.log(e);
+      return false;
+    }
+  },
+  
+  isUrl: (val) => {
+    try {
+      let url;
       url = new URL(val);
+      return url.protocol === "http:" || url.protocol === "https:";
     } catch (e) {
       return false;
     }
-    return url.protocol === "http:" || url.protocol === "https:";
   },
+
   removeNonalphanumerics: (str) => {
-    return str.replace(/[^A-Za-z0-9]/g, "").toLowerCase();
-  },
-  removeNonnumerics: (str) => {
-    return str.replace(/[^0-9]/g, "").toLowerCase();
-  },
-  round: (num, precision) => {
-    if (num) {
-      if (num >= 0) {
-        return parseFloat(
-          Math.abs(parseFloat(num.toString().split("e")[0])).toFixed(precision)
-        );
-      } else {
-        return (
-          parseFloat(
-            Math.abs(parseFloat(num.toString().split("e")[0])).toFixed(
-              precision
-            )
-          ) * -1
-        );
-      }
-    } else {
-      return 0;
+    try {
+      return str.replace(/[^A-Za-z0-9]/g, "").toLowerCase();
+    } catch (e) {
+      console.log(e);
+      return null;
     }
   },
-  stripHtml: (html) => {
-    return html.replace(/(<([^>]+)>)/gi, "");
-  },
-  squeezeStr: (str) => {
-    let m = module.exports;
-    return m.stripHtml(m.removeNonalphanumerics(str));
-  },
-  squeezeNum: (str) => {
-    let m = module.exports;
-    return +m.stripHtml(m.removeNonnumerics(str));
-  },
-  squeezeWebsiteName: (url) => {
-    url = url.toLowerCase();
-    let searchFor = url.includes(`www.`)
-      ? `www.`
-      : url.includes(`https://`)
-      ? `https://`
-      : `http://`;
 
-    return url.substring(
-      url.indexOf(searchFor) + searchFor.length,
-      url.indexOf(`.`, url.indexOf(searchFor))
-    );
+  removeNonnumerics: (str) => {
+    try {
+      return str.replace(/[^0-9]/g, "").toLowerCase();
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
   },
+
+  round: (num, precision) => {
+    try {
+      if (num) {
+        if (num >= 0) {
+          return parseFloat(
+            Math.abs(parseFloat(num.toString().split("e")[0])).toFixed(precision)
+          );
+        } else {
+          return (
+            parseFloat(
+              Math.abs(parseFloat(num.toString().split("e")[0])).toFixed(
+                precision
+              )
+            ) * -1
+          );
+        }
+      } else {
+        return 0;
+      }
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
+  },
+  
+  stripHtml: (html) => {
+    try {
+      return html.replace(/(<([^>]+)>)/gi, "");
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
+  },
+
+  squeezeStr: (str) => {
+    try {
+      let m = module.exports;
+      return m.stripHtml(m.removeNonalphanumerics(str));
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
+  },
+
+  squeezeNum: (str) => {
+    try {
+      let m = module.exports;
+      return +m.stripHtml(m.removeNonnumerics(str));
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
+  },
+
+  squeezeWebsiteName: (url) => {
+    try {
+      url = url.toLowerCase();
+      let searchFor = url.includes(`www.`)
+        ? `www.`
+        : url.includes(`https://`)
+        ? `https://`
+        : `http://`;
+  
+      return url.substring(
+        url.indexOf(searchFor) + searchFor.length,
+        url.indexOf(`.`, url.indexOf(searchFor))
+      );
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
+  },
+  
   // getVideoDetails: (videoUrl) => {
-  //   let done = new Promise((resolve, reject) => {
-  //     ffmpeg.ffprobe(videoUrl, function (err, metadata) {
-  //       resolve(metadata ? metadata : null);
+  //   try {
+  //     let done = new Promise((resolve, reject) => {
+  //       ffmpeg.ffprobe(videoUrl, function (err, metadata) {
+  //         resolve(metadata ? metadata : null);
+  //       });
   //     });
-  //   });
-  //   return done;
+  //     return done;
+  //   } catch (e) {
+  //     console.log(e);
+  //     return null;
+  //   }
   // },
+
   cleanObj: (obj) => {
-    // https://stackoverflow.com/a/38340730/8919391
-    return Object.fromEntries(
-      Object.entries(obj).filter(([_, v]) => v !== null && v.length > 0)
-    );
+    try {
+      // https://stackoverflow.com/a/38340730/8919391
+      return Object.fromEntries(
+        Object.entries(obj).filter(([_, v]) => v !== null && v.length > 0)
+      );
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
   },
 
   wait: (seconds) => {
-    return new Promise(function (resolve) {
-      setTimeout(function () {
-        resolve();
-      }, seconds * 1000);
-    });
+    try {
+      return new Promise(function (resolve) {
+        setTimeout(function () {
+          resolve();
+        }, seconds * 1000);
+      });
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
   },
 
   clone: (obj) => {
@@ -225,11 +348,21 @@ module.exports = {
   },
 
   urlifyString: (str) => {
-    return str.replaceAll(`&`, `[ampersand]`);
+    try {
+      return str.replaceAll(`&`, `[ampersand]`);
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
   },
 
   unurlifyString: (str) => {
-    return str.replaceAll(`[ampersand]`, `&`);
+    try {
+      return str.replaceAll(`[ampersand]`, `&`);
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
   },
 
   normaliseNum: (num) => {
@@ -247,77 +380,112 @@ module.exports = {
   },
 
   removeDuplicateArrayObjects: (arr, key) => {
-    // https://stackoverflow.com/a/56757215/8919391
-    return arr.filter(
-      (v, i, a) => a.findIndex((v2) => v2[key] === v[key]) === i
-    );
+    try {
+      // https://stackoverflow.com/a/56757215/8919391
+      return arr.filter(
+        (v, i, a) => a.findIndex((v2) => v2[key] === v[key]) === i
+      );
+    } catch (e) {
+      console.log(e);
+      return [];
+    }
   },
 
   getRes: (d) => {
-    let msg = `Unknown.`;
-
-    switch (d.res) {
-      case `ok`: {
-        msg = `Completed [${d.act}] {${d.type}} in DB and cache.`;
-        break;
+    try {
+      let msg = `Unknown.`;
+  
+      switch (d.res) {
+        case `ok`: {
+          msg = `Completed [${d.act}] {${d.type}} in DB and cache.`;
+          break;
+        }
+        case `no`: {
+          msg = `Unable to [${d.act}] {${d.type}} in DB and cache.`;
+          break;
+        }
       }
-      case `no`: {
-        msg = `Unable to [${d.act}] {${d.type}} in DB and cache.`;
-        break;
-      }
+  
+      return {
+        res: d.res,
+        msg,
+        data: d.data,
+      };
+    } catch (e) {
+      console.log(e);
+      return null;
     }
-
-    return {
-      res: d.res,
-      msg,
-      data: d.data,
-    };
   },
 
   getWaitCacheRes: () => {
-    return {
-      res: `wait`,
-      msg: `Cache hasn't finished intiating.`,
-      data: null,
-    };
+    try {
+      return {
+        res: `wait`,
+        msg: `Cache hasn't finished intiating.`,
+        data: null,
+      };
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
   },
 
   getOptionsFromBody: (body) => {
-    return {
-      sorters: body.sorters ? body.sorters.split(`,`) : [`id`],
-      sort_direction: body.sort_direction || `ascending`,
-    };
+    try {
+      return {
+        sorters: body.sorters ? body.sorters.split(`,`) : [`id`],
+        sort_direction: body.sort_direction || `ascending`,
+      };
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
   },
   
   calcPercChange: (a, b) => {
-    let perc_change;
-    if (b !== 0) {
-      if (a !== 0) {
-        perc_change = (b - a) / a * 100;
+    try {
+      let perc_change;
+      if (b !== 0) {
+        if (a !== 0) {
+          perc_change = (b - a) / a * 100;
+        } else {
+          perc_change = b * 100;
+        }
       } else {
-        perc_change = b * 100;
-      }
-    } else {
-      perc_change = - a * 100;            
-    }       
-    return Number(perc_change.toFixed(2));
+        perc_change = - a * 100;            
+      }       
+      return Number(perc_change.toFixed(2));
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
   },
 
   calcValBeforePercChange: (val, perc_change) => {
-    let val_before_perc_change = (val / (100 + perc_change)) * 100;
-    if (val_before_perc_change === Infinity) {
-      val_before_perc_change = val * 2;
+    try {
+      let val_before_perc_change = (val / (100 + perc_change)) * 100;
+      if (val_before_perc_change === Infinity) {
+        val_before_perc_change = val * 2;
+      }
+      return val_before_perc_change || 0;
+    } catch (e) {
+      console.log(e);
+      return null;
     }
-    return val_before_perc_change || 0;
   },
 
   formatAddress: (address) => {
-    return !module.exports.isEmptyObj(address)
-      ? `${address.substring(0, 4)}...${address.substring(
-          address.length - 4,
-          address.length
-        )}`
-      : ``;
+    try {
+      return !module.exports.isEmptyObj(address)
+        ? `${address.substring(0, 4)}...${address.substring(
+            address.length - 4,
+            address.length
+          )}`
+        : ``;
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
   },
 
   roundNum(num, decimals) {
@@ -330,11 +498,16 @@ module.exports = {
   },
 
   shuffleArray: (arr) => {
-    // https://stackoverflow.com/a/46545530/8919391
-    return arr
-      .map((value) => ({ value, sort: Math.random() }))
-      .sort((a, b) => a.sort - b.sort)
-      .map(({ value }) => value);
+    try {
+      // https://stackoverflow.com/a/46545530/8919391
+      return arr
+        .map((value) => ({ value, sort: Math.random() }))
+        .sort((a, b) => a.sort - b.sort)
+        .map(({ value }) => value);
+    } catch (e) {
+      console.log(e);
+      return [];
+    }
   },
 
   getStructMetadataObj: (type, timestamp) => {

@@ -12,17 +12,27 @@ let latest_process_timestamp = null;
 
 module.exports = {
   init: () => {
-    return init;
+    try {
+      return init;
+    } catch (e) {
+      console.log(e);
+      return false;
+    }
   },
 
   start: async (d) => {
-    await processStripeSubs(d);
-
-    while (!init) {
-      await util.wait(5);
+    try {
+      await processStripeSubs(d);
+  
+      while (!init) {
+        await util.wait(5);
+      }
+  
+      return;
+    } catch (e) {
+      console.log(e);
+      return;
     }
-
-    return;
   },
 };
 

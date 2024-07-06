@@ -5,19 +5,24 @@ const axios = require(`axios`);
 
 module.exports = {
   get: async (d) => {
-    let headers = d.headers || {};
-    // if (d.url.includes(EXTERNAL_API_URL)) {
-    //   payload.api_key = EXTERNAL_API_KEY;
-    // }
-    let res = null;
-    
-    if (headers) {
-      res = (await axios.get(d.url || ``, headers));
-    } else {
-      res = (await axios.get(d.url || ``));
+    try {
+      let headers = d.headers || {};
+      // if (d.url.includes(EXTERNAL_API_URL)) {
+      //   payload.api_key = EXTERNAL_API_KEY;
+      // }
+      let res = null;
+      
+      if (headers) {
+        res = (await axios.get(d.url || ``, headers));
+      } else {
+        res = (await axios.get(d.url || ``));
+      }
+  
+      return d.all ? res : res.data;
+    } catch (e) {
+      console.log(e);
+      return null;
     }
-
-    return d.all ? res : res.data;
   },
 
   post: async (d) => {

@@ -224,27 +224,31 @@ async function del(d) {
 // }
 
 async function refresh() {
-  let deletables = [
-    {
-      id: `io_instance`,
-      timespan_mins: 10,
-    },
-  ];
-
-  for (let key of Object.keys(cache)) {
-    if (
-      util.isEmptyObj(cache[key]) ||
-      util.getTimestampDiff(
-        cache[key].cache_metadata.timestamp,
-        util.getTimestamp(),
-        `minutes`
-      ) >=
-        (deletables.some((d) => d.id === cache[key].metadata.type)
-          ? deletables.find((d) => d.id === cache[key].metadata.type)
-              .timespan_mins
-          : 30)
-    ) {
-      delete cache[key];
+  try {
+    let deletables = [
+      {
+        id: `io_instance`,
+        timespan_mins: 10,
+      },
+    ];
+  
+    for (let key of Object.keys(cache)) {
+      if (
+        util.isEmptyObj(cache[key]) ||
+        util.getTimestampDiff(
+          cache[key].cache_metadata.timestamp,
+          util.getTimestamp(),
+          `minutes`
+        ) >=
+          (deletables.some((d) => d.id === cache[key].metadata.type)
+            ? deletables.find((d) => d.id === cache[key].metadata.type)
+                .timespan_mins
+            : 30)
+      ) {
+        delete cache[key];
+      }
     }
+  } catch (e) {
+    console.log(e);
   }
 }

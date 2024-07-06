@@ -116,8 +116,16 @@ app.use(function (req, res, next) {
   }
 });
 
-app.get(`/`, (req, res) => {
-  res.send(`${PROJECT_NAME} API`);
+app.get(`/`, (fe, api) => {
+  try {
+    api.send(`${PROJECT_NAME} API`);
+  } catch (e) {
+    console.log(e);
+
+    api.send({
+      data: `error`
+    });
+  }
 });
 
 io.on(`connection`, (socket) => {
@@ -132,130 +140,180 @@ io.on(`connection`, (socket) => {
   */
 
   socket.on(`init`, async (d, callback) => {
-    if (socket.handshake.headers.x_api_key !== API_KEY) callback({error: `Unauthorised.`});
-    else callback(
-      await util.getRes({
-        res: `ok`,
-        act: `get`,
-        type: `init`,
-        data: processes.init(),
-      })
-    );
+    try {
+      if (socket.handshake.headers.x_api_key !== API_KEY) callback({error: `Unauthorised.`});
+      else callback(
+        await util.getRes({
+          res: `ok`,
+          act: `get`,
+          type: `init`,
+          data: processes.init(),
+        })
+      );
+    } catch (e) {
+      console.log(e);
+      callback({data: `error`});
+    }
   });
 
   // socket.on(`connect`, async (d, callback) => {
-  //   // { user_id, page_code }
-  //   // io.emit(`connect`, d);
-  //   // callback(
-  //   //   process.init().cache ?
-  //   // )
-
-  //   if (process.init().cache) {
-  //     io.emit(`connect_res`, await dataflow.add(d));
+  //   try {
+  //     // { user_id, page_code }
+  //     // io.emit(`connect`, d);
+  //     // callback(
+  //     //   process.init().cache ?
+  //     // )
+  
+  //     if (process.init().cache) {
+  //       io.emit(`connect_res`, await dataflow.add(d));
+  //     }
+  //   } catch (e) {
+  //     console.log(e);
+  //     callback({data: `error`});
   //   }
   // });
 
   // socket.on(`new_instance`, async (d, callback) => {
-  //   if (processes.init().cache) {
-  //     let new_obj = await dataflow.add(d);
-
-  //     socket.emit(
-  //       `new_instance_update`,
-  //       await dataflow.getMany({
-  //         type: `io_instance`,
-  //         filters: [],
-  //       })
-  //     );
-
-  //     callback(new_obj || util.getWaitCacheRes());
+  //   try {
+  //     if (processes.init().cache) {
+  //       let new_obj = await dataflow.add(d);
+  
+  //       socket.emit(
+  //         `new_instance_update`,
+  //         await dataflow.getMany({
+  //           type: `io_instance`,
+  //           filters: [],
+  //         })
+  //       );
+  
+  //       callback(new_obj || util.getWaitCacheRes());
+  //     }
+  //   } catch (e) {
+  //     console.log(e);
+  //     callback({data: `error`});
   //   }
   // });
 
   socket.on(`load`, async (d, callback) => {
-    if (socket.handshake.headers.x_api_key !== API_KEY) callback({error: `Unauthorised.`});
-    else if (!processes.init().cache) {
-      callback(util.getWaitCacheRes());
-    } else {
-      if (d.is_cache_request && !util.isEmptyObj(d.cache_get_params)) {
-        // console.log(`------------------- initial data`);
-        // console.log(d);
-
-        let cache_obj = await dataflow.get(d.cache_get_params);
-
-        callback(cache_obj);
-
-        // console.log(`------------------- cache obj`);
-        // console.log(cache_obj);
-
-        let updated_obj = await adhoc.load(d);
-
-        // console.log(`------------------- load params`);
-        // console.log(d);
-
-        if (!util.isEmptyObj(updated_obj)) {
-          await dataflow.add({
-            type: d.type,
-            obj: updated_obj.data,
-          });
-
-          cache_obj = await dataflow.get(d.cache_get_params);
-
-          // console.log(`------------------- updated obj`);
-          // console.log(updated_obj);
-
-          // console.log(`------------------- new cache obj`);
-          // console.log(cache_obj);
-
-          socket.emit(`new_load_${d.type}`, cache_obj);
-        }
+    try {
+      if (socket.handshake.headers.x_api_key !== API_KEY) callback({error: `Unauthorised.`});
+      else if (!processes.init().cache) {
+        callback(util.getWaitCacheRes());
       } else {
-        callback(await adhoc.load(d));
+        if (d.is_cache_request && !util.isEmptyObj(d.cache_get_params)) {
+          // console.log(`------------------- initial data`);
+          // console.log(d);
+  
+          let cache_obj = await dataflow.get(d.cache_get_params);
+  
+          callback(cache_obj);
+  
+          // console.log(`------------------- cache obj`);
+          // console.log(cache_obj);
+  
+          let updated_obj = await adhoc.load(d);
+  
+          // console.log(`------------------- load params`);
+          // console.log(d);
+  
+          if (!util.isEmptyObj(updated_obj)) {
+            await dataflow.add({
+              type: d.type,
+              obj: updated_obj.data,
+            });
+  
+            cache_obj = await dataflow.get(d.cache_get_params);
+  
+            // console.log(`------------------- updated obj`);
+            // console.log(updated_obj);
+  
+            // console.log(`------------------- new cache obj`);
+            // console.log(cache_obj);
+  
+            socket.emit(`new_load_${d.type}`, cache_obj);
+          }
+        } else {
+          callback(await adhoc.load(d));
+        }
       }
+    } catch (e) {
+      console.log(e);
+      callback({data: `error`});
     }
   });
 
   socket.on(`get`, async (d, callback) => {
-    if (socket.handshake.headers.x_api_key !== API_KEY) callback({error: `Unauthorised.`});
-    else callback(
-      processes.init().cache ? await dataflow.get(d) : util.getWaitCacheRes()
-    );
+    try {
+      if (socket.handshake.headers.x_api_key !== API_KEY) callback({error: `Unauthorised.`});
+      else callback(
+        processes.init().cache ? await dataflow.get(d) : util.getWaitCacheRes()
+      );
+    } catch (e) {
+      console.log(e);
+      callback({data: `error`});
+    }
   });
 
   socket.on(`get_many`, async (d, callback) => {
-    if (socket.handshake.headers.x_api_key !== API_KEY) callback({error: `Unauthorised.`});
-    else callback(
-      processes.init().cache
-        ? await dataflow.getMany(d)
-        : util.getWaitCacheRes()
-    );
+    try {
+      if (socket.handshake.headers.x_api_key !== API_KEY) callback({error: `Unauthorised.`});
+      else callback(
+        processes.init().cache
+          ? await dataflow.getMany(d)
+          : util.getWaitCacheRes()
+      );
+    } catch (e) {
+      console.log(e);
+      callback({data: `error`});
+    }
   });
 
   socket.on(`add`, async (d, callback) => {
-    if (socket.handshake.headers.x_api_key !== API_KEY) callback({error: `Unauthorised.`});
-    else callback(
-      processes.init().cache ? await dataflow.add(d) : util.getWaitCacheRes()
-    );
+    try {
+      if (socket.handshake.headers.x_api_key !== API_KEY) callback({error: `Unauthorised.`});
+      else callback(
+        processes.init().cache ? await dataflow.add(d) : util.getWaitCacheRes()
+      );
+    } catch (e) {
+      console.log(e);
+      callback({data: `error`});
+    }
   });
 
   socket.on(`edit`, async (d, callback) => {
-    if (socket.handshake.headers.x_api_key !== API_KEY) callback({error: `Unauthorised.`});
-    else callback(
-      processes.init().cache ? await dataflow.edit(d) : util.getWaitCacheRes()
-    );
+    try {
+      if (socket.handshake.headers.x_api_key !== API_KEY) callback({error: `Unauthorised.`});
+      else callback(
+        processes.init().cache ? await dataflow.edit(d) : util.getWaitCacheRes()
+      );
+    } catch (e) {
+      console.log(e);
+      callback({data: `error`});
+    }
   });
 
   socket.on(`del`, async (d, callback) => {
-    if (socket.handshake.headers.x_api_key !== API_KEY) callback({error: `Unauthorised.`});
-    else callback(
-      processes.init().cache ? await dataflow.del(d) : util.getWaitCacheRes()
-    );
+    try {
+      if (socket.handshake.headers.x_api_key !== API_KEY) callback({error: `Unauthorised.`});
+      else callback(
+        processes.init().cache ? await dataflow.del(d) : util.getWaitCacheRes()
+      );
+    } catch (e) {
+      console.log(e);
+      callback({data: `error`});
+    }
   });
 
   socket.on(`pull`, async (d, callback) => {
-    if (socket.handshake.headers.x_api_key !== API_KEY) callback({error: `Unauthorised.`});
-    else callback(
-      processes.init().cache ? await dataflow.pull(d) : util.getWaitCacheRes()
-    );
+    try {
+      if (socket.handshake.headers.x_api_key !== API_KEY) callback({error: `Unauthorised.`});
+      else callback(
+        processes.init().cache ? await dataflow.pull(d) : util.getWaitCacheRes()
+      );
+    } catch (e) {
+      console.log(e);
+      callback({data: `error`});
+    }
   });
 
   // space
@@ -409,88 +467,152 @@ async function initIoMaintenanceRefresh() {
 // rest
 
 app.post(`/init`, async (fe, api) => {
-  // note: allow `component` calls to access /init
-  if (![API_KEY, `component`].includes(fe.headers.x_api_key)) api.send({error: `Unauthorised.`});
-  else api.send(
-    await util.getRes({
-      res: `ok`,
-      act: `get`,
-      type: `init`,
-      data: processes.init(),
-    })
-  );
+  try {
+    // note: allow `component` calls to access /init
+    if (![API_KEY, `component`].includes(fe.headers.x_api_key)) api.send({error: `Unauthorised.`});
+    else api.send(
+      await util.getRes({
+        res: `ok`,
+        act: `get`,
+        type: `init`,
+        data: processes.init(),
+      })
+    );
+  } catch (e) {
+    console.log(e);
+
+    api.send({
+      data: `error`
+    });
+  }
 });
 
 app.post(`/get`, async (fe, api) => {
-  if (fe.headers.x_api_key !== API_KEY) api.send({error: `Unauthorised.`});
-  else api.send(
-    processes.init().cache
-      ? await dataflow.get(fe.body)
-      : util.getWaitCacheRes()
-  );
+  try {
+    if (fe.headers.x_api_key !== API_KEY) api.send({error: `Unauthorised.`});
+    else api.send(
+      processes.init().cache
+        ? await dataflow.get(fe.body)
+        : util.getWaitCacheRes()
+    );
+  } catch (e) {
+    console.log(e);
+
+    api.send({
+      data: `error`
+    });
+  }
 });
 
 app.post(`/get_many`, async (fe, api) => {
-  if (fe.headers.x_api_key !== API_KEY) api.send({error: `Unauthorised.`});
-  else api.send(
-    processes.init().cache
-      ? await dataflow.getMany(fe.body)
-      : util.getWaitCacheRes()
-  );
+  try {
+    if (fe.headers.x_api_key !== API_KEY) api.send({error: `Unauthorised.`});
+    else api.send(
+      processes.init().cache
+        ? await dataflow.getMany(fe.body)
+        : util.getWaitCacheRes()
+    );
+  } catch (e) {
+    console.log(e);
+
+    api.send({
+      data: `error`
+    });
+  }
 });
 
 app.post(`/add`, async (fe, api) => {
-  if (fe.headers.x_api_key !== API_KEY) api.send({error: `Unauthorised.`});
-  else api.send(
-    processes.init().cache
-      ? await dataflow.add(fe.body)
-      : util.getWaitCacheRes()
-  );
+  try {
+    if (fe.headers.x_api_key !== API_KEY) api.send({error: `Unauthorised.`});
+    else api.send(
+      processes.init().cache
+        ? await dataflow.add(fe.body)
+        : util.getWaitCacheRes()
+    );
+  } catch (e) {
+    console.log(e);
+
+    api.send({
+      data: `error`
+    });
+  }
 });
 
 app.post(`/edit`, async (fe, api) => {
-  if (fe.headers.x_api_key !== API_KEY) api.send({error: `Unauthorised.`});
-  else api.send(
-    processes.init().cache
-      ? await dataflow.edit(fe.body)
-      : util.getWaitCacheRes()
-  );
+  try {
+    if (fe.headers.x_api_key !== API_KEY) api.send({error: `Unauthorised.`});
+    else api.send(
+      processes.init().cache
+        ? await dataflow.edit(fe.body)
+        : util.getWaitCacheRes()
+    );
+  } catch (e) {
+    console.log(e);
+
+    api.send({
+      data: `error`
+    });
+  }
 });
 
 app.post(`/del`, async (fe, api) => {
-  if (fe.headers.x_api_key !== API_KEY) api.send({error: `Unauthorised.`});
-  else api.send(
-    processes.init().cache
-      ? await dataflow.del(fe.body)
-      : util.getWaitCacheRes()
-  );
+  try {
+    if (fe.headers.x_api_key !== API_KEY) api.send({error: `Unauthorised.`});
+    else api.send(
+      processes.init().cache
+        ? await dataflow.del(fe.body)
+        : util.getWaitCacheRes()
+    );
+  } catch (e) {
+    console.log(e);
+
+    api.send({
+      data: `error`
+    });
+  }
 });
 
 app.post(`/pull`, async (fe, api) => {
-  if (fe.headers.x_api_key !== API_KEY) api.send({error: `Unauthorised.`});
-  else api.send(
-    processes.init().cache
-      ? await dataflow.pull(fe.body)
-      : util.getWaitCacheRes()
-  );
+  try {
+    if (fe.headers.x_api_key !== API_KEY) api.send({error: `Unauthorised.`});
+    else api.send(
+      processes.init().cache
+        ? await dataflow.pull(fe.body)
+        : util.getWaitCacheRes()
+    );
+  } catch (e) {
+    console.log(e);
+
+    api.send({
+      data: `error`
+    });
+  }
 });
 
 app.post(`/load`, async (fe, api) => {
-  const TYPES_LOADABLE_BY_COMPONENT = [
-    // note: add any adhoc calls that are callable by `component`, which may be used by the public
-    `component_sample`
-  ];
-  
-  if (
-    (fe.headers.x_api_key !== API_KEY) &&
-    !(
-      (fe.headers.x_api_key === `component`) &&
-      TYPES_LOADABLE_BY_COMPONENT.includes(fe.body.type)
-    )
-  ) api.send({error: `Unauthorised.`});
-  else api.send(
-    processes.init().cache ? await adhoc.load(fe.body) : util.getWaitCacheRes()
-  );
+  try {
+    const TYPES_LOADABLE_BY_COMPONENT = [
+      // note: add any adhoc calls that are callable by `component`, which may be used by the public
+      `component_sample`
+    ];
+    
+    if (
+      (fe.headers.x_api_key !== API_KEY) &&
+      !(
+        (fe.headers.x_api_key === `component`) &&
+        TYPES_LOADABLE_BY_COMPONENT.includes(fe.body.type)
+      )
+    ) api.send({error: `Unauthorised.`});
+    else api.send(
+      processes.init().cache ? await adhoc.load(fe.body) : util.getWaitCacheRes()
+    );
+  } catch (e) {
+    console.log(e);
+
+    api.send({
+      data: `error`
+    });
+  }
 });
 
 app.post(`/enter`, async (fe, api) => {
@@ -510,6 +632,7 @@ app.post(`/enter`, async (fe, api) => {
     });
   } catch (e) {
     console.log(e);
+    
     api.send({
       data: `error`
     });
@@ -526,6 +649,7 @@ app.post(`/stripe`, async (fe, api) => {
     });
   } catch (e) {
     console.log(e);
+
     api.send({
       data: `error`
     });
@@ -591,10 +715,18 @@ async function statsRefresh() {
 // maintenace timestamp
 
 app.post(`/get_maintenance_timestamp`, async (fe, api) => {
-  if (fe.headers.x_api_key !== API_KEY) api.send({error: `Unauthorised.`});
-  else api.send({
-    data: maintenance_timestamp || null
-  });
+  try {
+    if (fe.headers.x_api_key !== API_KEY) api.send({error: `Unauthorised.`});
+    else api.send({
+      data: maintenance_timestamp || null
+    });
+  } catch (e) {
+    console.log(e);
+
+    api.send({
+      data: `error`
+    });
+  }
 });
 
 app.get(`/get_maintenance_timestamp`, async (fe, api) => {
@@ -656,30 +788,54 @@ app.get(`/set_maintenance_timestamp`, async (fe, api) => {
 
 // get routes
 
-// app.get(`/`, (req, res) => {
-//   res.send(`Suave API`);
-// });
-
 app.get(`/cache/:type`, async (fe, api) => {
-  let key = fe.query.key || ``;
-  
-  if (key !== API_KEY) {
+  try {
+    let key = fe.query.key || ``;
+    
+    if (key !== API_KEY) {
+      api.send({
+        data: `wrong key`
+      });
+    } else {
+      api.send(
+        await cache.getMany({
+          type: fe.params.type,
+          filters: [],
+        })
+      );
+    }
+  } catch (e) {
+    console.log(e);
+
     api.send({
-      data: `wrong key`
+      data: `error`
     });
-  } else {
-    api.send(
-      await cache.getMany({
-        type: fe.params.type,
-        filters: [],
-      })
-    );
   }
 });
 
-// app.get(`/test`, async (req, res) => {
-//   //
+// app.get(`/test`, async (fe, api) => {
+//   try {
+//     // todo: add any test code here
+//   } catch (e) {
+//     console.log(e);
+
+//     api.send({
+//       data: `error`
+//     });
+//   }
 // });
+
+app.get(`/add_init_stats`, async (fe, api) => {
+  try {
+    // tba
+  } catch (e) {
+    console.log(e);
+
+    api.send({
+      data: `error`
+    });
+  }
+});
 
 // ---- discord bot
 
@@ -700,10 +856,13 @@ app.get(`/cache/:type`, async (fe, api) => {
 // discord_bot.login(DISCORD_BOT_TOKEN);
 
 // discord_bot.once(`ready`, async () => {
-//   console.log(`Discord bot ready`);
-//   startDiscordBoundProcesses();
+//   try {
+//     console.log(`Discord bot ready`);
+//     startDiscordBoundProcesses();
+//   } catch (e) {
+//     console.log(e);
+//   }
 // });
-
 
 // async function startDiscordBoundProcesses() {
 //   try {
@@ -733,52 +892,56 @@ app.get(`/cache/:type`, async (fe, api) => {
 // }
 
 // discord_bot.on(`interactionCreate`, async (interaction) => {
-//   if (!interaction.isCommand()) return;
-
-//   // let errors = [];
-//   let is_private_command = interaction.options.getBoolean(`private`);
-
-//   const { commandName } = interaction;
-//   switch (commandName) {
-//     case `ping`: {
-//       await interaction.reply(`pong!`);
-//       break;
-//     }
-
-//     case `user`: {
-//       switch (interaction.options.getSubcommand()) {
-//         case `view`: {
-//           if (is_private_command === null) {
-//             is_private_command = true;
-//           }
-
-//           let name = interaction.options.getString(`name`);
-
-//           let embed = new EmbedBuilder()
-//             .setColor(`#BAE8F9`)
-//             .setAuthor({
-//               name: `Test command`,
-//               iconURL: ``,
-//               url: `https://${PROJECT_LINK}`,
-//             })
-//             .addFields([
-//               {
-//                 name: `Viewing user`,
-//                 value: name,
-//               },
-//             ]);
-
-//           await interaction.reply({
-//             embeds: [embed],
-//             ephemeral: is_private_command,
-//           });
-
-//           break;
-//         }
+//   try {
+//     if (!interaction.isCommand()) return;
+  
+//     // let errors = [];
+//     let is_private_command = interaction.options.getBoolean(`private`);
+  
+//     const { commandName } = interaction;
+//     switch (commandName) {
+//       case `ping`: {
+//         await interaction.reply(`pong!`);
+//         break;
 //       }
-
-//       break;
+  
+//       case `user`: {
+//         switch (interaction.options.getSubcommand()) {
+//           case `view`: {
+//             if (is_private_command === null) {
+//               is_private_command = true;
+//             }
+  
+//             let name = interaction.options.getString(`name`);
+  
+//             let embed = new EmbedBuilder()
+//               .setColor(`#BAE8F9`)
+//               .setAuthor({
+//                 name: `Test command`,
+//                 iconURL: ``,
+//                 url: `https://${PROJECT_LINK}`,
+//               })
+//               .addFields([
+//                 {
+//                   name: `Viewing user`,
+//                   value: name,
+//                 },
+//               ]);
+  
+//             await interaction.reply({
+//               embeds: [embed],
+//               ephemeral: is_private_command,
+//             });
+  
+//             break;
+//           }
+//         }
+  
+//         break;
+//       }
 //     }
+//   } catch (e) {
+//     console.log(e);
 //   }
 // });
 
@@ -791,34 +954,38 @@ app.get(`/cache/:type`, async (fe, api) => {
 // registerDiscordBotCommands();
 
 // function registerDiscordBotCommands() {
-//   const commands = [
-//     new SlashCommandBuilder().setName(`ping`).setDescription(`Ping the bot.`),
-
-//     new SlashCommandBuilder()
-//       .setName(`user`)
-//       .setDescription(`Related to users.`)
-//       .addSubcommand((subcmd) =>
-//         subcmd
-//           .setName(`view`)
-//           .setDescription(`View user.`)
-//           .addStringOption((option) =>
-//             option.setName(`name`).setDescription(`Name.`).setRequired(true)
-//           )
-//           .addBooleanOption((option) =>
-//             option
-//               .setName(`private`)
-//               .setDescription(`Private query? True by default.`)
-//               .setRequired(false)
-//           )
-//       ),
-//   ].map((command) => command.toJSON());
-
-//   const rest = new REST({ version: `9` }).setToken(DISCORD_BOT_TOKEN);
-
-//   rest
-//     .put(Routes.applicationCommands(DISCORD_CLIENT_ID), {
-//       body: commands,
-//     })
-//     .then(() => console.log(`Successfully registered Discord bot commands.`))
-//     .catch(console.error);
+//   try {
+//     const commands = [
+//       new SlashCommandBuilder().setName(`ping`).setDescription(`Ping the bot.`),
+  
+//       new SlashCommandBuilder()
+//         .setName(`user`)
+//         .setDescription(`Related to users.`)
+//         .addSubcommand((subcmd) =>
+//           subcmd
+//             .setName(`view`)
+//             .setDescription(`View user.`)
+//             .addStringOption((option) =>
+//               option.setName(`name`).setDescription(`Name.`).setRequired(true)
+//             )
+//             .addBooleanOption((option) =>
+//               option
+//                 .setName(`private`)
+//                 .setDescription(`Private query? True by default.`)
+//                 .setRequired(false)
+//             )
+//         ),
+//     ].map((command) => command.toJSON());
+  
+//     const rest = new REST({ version: `9` }).setToken(DISCORD_BOT_TOKEN);
+  
+//     rest
+//       .put(Routes.applicationCommands(DISCORD_CLIENT_ID), {
+//         body: commands,
+//       })
+//       .then(() => console.log(`Successfully registered Discord bot commands.`))
+//       .catch(console.error);
+//   } catch (e) {
+//     console.log(e);
+//   }
 // }
