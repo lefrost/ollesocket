@@ -54,7 +54,13 @@ async function processUsers(d) {
               let remaining_gcloud_image_urls = user.metadata.prev_gcloud_image_urls.slice() || [];
 
               for (let gloud_image_url of user.metadata.prev_gcloud_image_urls.slice()) {
-                let del_res = await gcloud.delImage(gloud_image_url) || ``;
+                let del_res = ``;
+                
+                if (gcloud_image_url !== user.icon_image_url) {
+                  await gcloud.delImage(gloud_image_url) || ``;
+                } else {
+                  del_res = `done`;
+                };
 
                 if (del_res === `done`) {
                   remaining_gcloud_image_urls = remaining_gcloud_image_urls.filter(u => u !== gloud_image_url);
