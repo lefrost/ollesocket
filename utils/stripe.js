@@ -26,7 +26,8 @@ module.exports = {
         // tba (stripe): error when parsing stripe signature: No webhook payload was provided
         const body = req.body;
         const stripe_signature = req.headers[`stripe-signature`] || ``;
-        event = stripe.webhooks.constructEvent(req.rawBody, stripe_signature, STRIPE_WEBHOOK_SECRET);
+
+        event = stripe.webhooks.constructEvent(body, stripe_signature, STRIPE_WEBHOOK_SECRET);
       }
 
       if (!(
@@ -48,12 +49,13 @@ module.exports = {
 
           if (!(
             session &&
-            session.customer &&
+            session.id &&
             session.line_items &&
             session.line_items.data &&
             session.line_items.data[0] &&
             session.line_items.data[0].price &&
             session.line_items.data[0].price.id &&
+            session.line_items.data[0].price.type &&
             session.line_items.data[0].price.product
           )) {
             console.log(`stripe.handleEvent - checkout.session.completed - invalid session`);
@@ -61,13 +63,57 @@ module.exports = {
           }
 
           const price_id = session.line_items.data[0].price.id;
+          const price_type = session.line_items.data[0].price.type;
           const product_id = session.line_items.data[0].price.product;
-          const customer = await stripe.customers.retrieve(session.customer);
+
+          if (![`one_time`, `recurring`].includes(price_type)) {
+            console.log(`stripe.handleEvent - checkout.session.completed - unsupported price type`);
+            return;
+          }
+
+          let customer_id = ``;
+          let customer_email = ``;
+
+          if (price_type === `one_time`) {
+            const one_time_customer_details = session.customer_details;
+
+            if (!(
+              one_time_customer_details &&
+              one_time_customer_details.email
+            )) {
+              console.log(`stripe.handleEvent - checkout.session.completed - invalid one-time subscription customer details`);
+              return;
+            }
+
+            customer_id = ``; // note: empty
+            customer_email = one_time_customer_details.email;
+          } else if (price_type === `recurring`) {
+            const recurring_subscription_customer = await stripe.customers.retrieve(session.customer);
+
+            if (!(
+              recurring_subscription_customer &&
+              recurring_subscription_customer.id &&
+              recurring_subscription_customer.email
+            )) {
+              console.log(`stripe.handleEvent - checkout.session.completed - invalid recurring subscription customer`);
+              return;
+            }
+
+            customer_id = recurring_subscription_customer.id;
+            customer_email = recurring_subscription_customer.email;
+          }
           
           if (!(
-            customer &&
-            customer.id &&
-            customer.email
+            customer_email &&
+            (
+              (
+                (price_type === `one_time`)
+              ) ||
+              (
+                (price_type === `recurring`) &&
+                customer_id
+              )
+            )
           )) {
             console.log(`stripe.handleEvent - checkout.session.completed - invalid customer`);
             return;
@@ -101,7 +147,7 @@ module.exports = {
                 prop: `connections`,
                 value: {
                   type: `email`,
-                  code: customer.email
+                  code: customer_email
                 },
                 condition: `some`,
                 options: []
@@ -115,12 +161,31 @@ module.exports = {
           )) {
             console.log(`stripe.handleEvent - checkout.session.completed - no matching user found`);
             return;
-          } else if ((matching_user.stripe_subs || []).some(s =>
-            (s.customer_id === customer.id) &&
-            // (s.customer_email === customer.email) // note: don't use email to find matching stripe_sub, because a user may have changed their [lefrost product] account's and/or stripe account's email since their stripe_sub first started 
-            (s.price_id === price.id) &&
-            (s.product_id === product.id)
-          )) {
+          } else if ((matching_user.stripe_subs || []).some(s => {
+            try {
+              let is_price_type_valid = false;
+
+              if (price_type === `one_time`) {
+                is_price_type_valid = (s.customer_email === customer_email) || false;
+              } else if (price_type === `recurring`) {
+                is_price_type_valid = (s.customer_id === customer_id) || false; // note: for recurring subscription, don't use email to find matching stripe_sub, because a user may have changed their [lefrost product] account's and/or stripe account's email since their stripe_sub first started 
+              }
+
+              return (
+                is_price_type_valid &&
+                (
+                  (price_type === `one_time`) ?
+                    (s.session_id === session.id) :
+                    true
+                )
+                // (s.price_id === price.id) &&
+                // (s.product_id === product.id)
+              ) || false;
+            } catch (e) {
+              console.log(e);
+              return false;
+            }
+          })) {
             console.log(`stripe.handleEvent - checkout.session.completed - matching user stripe_sub already added`);
             return;
           }
@@ -132,10 +197,12 @@ module.exports = {
               stripe_subs: [
                 ...matching_user.stripe_subs || [],
                 {
-                  customer_id: customer.id,
-                  customer_email: customer.email,
+                  session_id: session.id,
+                  customer_id: customer_id || ``,
+                  customer_email: customer_email || ``,
                   price_id: price.id,
                   product_id: product.id,
+                  type: price_type,
                   timestamp: event.created || util.getTimestamp()
                 }
               ]
@@ -146,6 +213,8 @@ module.exports = {
         }
 
         case `customer.subscription.deleted`: {
+          // note: only meant for `recurring` subscriptions, not `one_time`
+
           const subscription = await stripe.subscriptions.retrieve(event.data.object.id);
 
           if (!(
@@ -155,7 +224,7 @@ module.exports = {
             subscription.items &&
             subscription.items.data
           )) {
-            console.log(`stripe.handleEvent - customer.subscription.deleted - invalid subscription`);
+            console.log(`stripe.handleEvent - customer.subscription.deleted - invalid subscription (might not be a "recurring" subscription type)`);
             return;
           }
 
@@ -191,7 +260,8 @@ module.exports = {
               {
                 prop: `stripe_subs`,
                 value: {
-                  customer_id: subscription.customer,
+                  customer_id: subscription.customer, // note: getting `subscription.customer` here is safe since only "recurring"-type subscriptions are subject to deletion (ie. this event type), which are the subscriptions which have `subscription.customer` assigned
+                  type: `recurring`
                 },
                 condition: `some`,
                 options: []
@@ -201,22 +271,17 @@ module.exports = {
 
           if (!(
             matching_user &&
-            matching_user.id &&
-            (matching_user.stripe_subs || []).some(s =>
-              (s.customer_id === subscription.customer) &&
-              prices.some(p =>
-                p.id === s.price_id
-              ) &&
-              (s.timestamp <= event.created) // note: only del matching stripe subs that were created *before* the "del" event
-            )
+            matching_user.id
           )) {
-            console.log(`stripe.handleEvent - checkout.session.deleted - no matching user found`);
+            console.log(`stripe.handleEvent - checkout.session.deleted - no matching user with recurring stripe_sub(s) found`);
             return;
-          }  else if (!(matching_user.stripe_subs || []).some(s =>
+          } else if (!(matching_user.stripe_subs || []).some(s =>
             (s.customer_id === subscription.customer) &&
             prices.some(p =>
               p.id === s.price_id
-            )
+            ) &&
+            (s.type === `recurring`) &&
+            (s.timestamp <= event.created) // note: only del matching stripe subs that were created *before* the "del" event
           )) {
             console.log(`stripe.handleEvent - checkout.session.deleted - matching user stripe_sub already deleted`);
             return;
@@ -232,6 +297,7 @@ module.exports = {
                   prices.some(p =>
                     p.id === s.price_id
                   ) &&
+                  (s.type === `recurring`) &&
                   (s.timestamp <= event.created)
                 )
               ) || []

@@ -37,6 +37,13 @@ let stats = {
 
 // ---- app & server
 
+const raw_endpoints = [`/stripe`];
+
+for (let raw_endpoint of raw_endpoints) {
+  // note: use express.raw for endpoints that require raw req.body, eg. `/stripe` - https://stackoverflow.com/a/67531558/8919391
+  app.use(raw_endpoint, express.raw({type: `*/*`}));
+}
+
 app.use(express.json({ limit: `50mb`, extended: true }));
 app.use(compression());
 app.use(
@@ -47,7 +54,6 @@ app.use(
     abortOnLimit: true,
   })
 );
-
 
 const server = app.listen(port, async () => {
   console.log(`up on http://localhost:${port}`);
@@ -71,35 +77,40 @@ const io = require(`socket.io`)(server, {
 });
 
 app.use(function (req, res, next) {
-  // let auth_origins = [
-  //   `http://localhost:3000`,
-  //   `https://www.ollesocket.vercel.app`,
-  //   `https://ollesocket.vercel.app`,
-  // ];
+  if (raw_endpoints.includes(req.originalUrl)) {
+    // note: skip code block below if raw endpoint is connecting, eg. webhook for `/stripe`
+    next();
+  } else {
+    // let auth_origins = [
+    //   `http://localhost:3000`,
+    //   `https://www.ollesocket.vercel.app`,
+    //   `https://ollesocket.vercel.app`,
+    // ];
 
-  // Website you wish to allow to connect
-  // res.setHeader("Access-Control-Allow-Origin", "*");
-  let origin = req.headers.origin;
-  if (
-    // auth_origins.includes(origin) &&
-    (util.isEmptyObj(req.body) || [API_KEY, `component`].includes(req.headers.x_api_key)) // note: allow `component` calls to access
-  ) {
-    res.setHeader("Access-Control-Allow-Origin", origin);
+    // Website you wish to allow to connect
+    // res.setHeader("Access-Control-Allow-Origin", "*");
+    let origin = req.headers.origin;
+    if (
+      // auth_origins.includes(origin) &&
+      (util.isEmptyObj(req.body) || [API_KEY, `component`].includes(req.headers.x_api_key)) // note: allow `component` calls to access
+    ) {
+      res.setHeader("Access-Control-Allow-Origin", origin);
+    }
+    // Request methods you wish to allow
+    res.setHeader(
+      "Access-Control-Allow-Methods",
+      "GET, POST, OPTIONS, PUT, PATCH, DELETE"
+    );
+    // Request headers you wish to allow
+    res.setHeader(
+      "Access-Control-Allow-Headers",
+      "X-Requested-With,content-type,x_api_key"
+    );
+    // Set to true if you need the website to include cookies in the requests sent to the API (e.g. in case you use sessions)
+    res.setHeader("Access-Control-Allow-Credentials", true);
+    // Pass to next layer of middleware
+    next();
   }
-  // Request methods you wish to allow
-  res.setHeader(
-    "Access-Control-Allow-Methods",
-    "GET, POST, OPTIONS, PUT, PATCH, DELETE"
-  );
-  // Request headers you wish to allow
-  res.setHeader(
-    "Access-Control-Allow-Headers",
-    "X-Requested-With,content-type,x_api_key"
-  );
-  // Set to true if you need the website to include cookies in the requests sent to the API (e.g. in case you use sessions)
-  res.setHeader("Access-Control-Allow-Credentials", true);
-  // Pass to next layer of middleware
-  next();
 });
 
 app.get(`/`, (req, res) => {
@@ -502,7 +513,7 @@ app.post(`/enter`, async (fe, api) => {
   }
 });
 
-app.post(`/stripe`, express.json({type: 'application/json'}), async (fe, api) => {
+app.post(`/stripe`, async (fe, api) => {
   try {
     // note: do `stripe listen --forward-to localhost:3001/stripe` to start listening to stripe events
     await stripe.handleEvent(fe, false);

@@ -106,12 +106,32 @@ async function processUsers(d) {
 
               user_updated_stripe_subs.push(
                 ...(matching_user_c.stripe_subs || []).filter(mus =>
-                  !user_updated_stripe_subs.some(us =>
-                    (us.customer_id === mus.customer_id) &&
-                    // (us.customer_email === mus.customer_email) && // note: don't use email to find matching stripe_sub, because a user may have changed their [lefrost product] account's and/or stripe account's email since their stripe_sub first started 
-                    (us.price_id === mus.price_id) &&
-                    (us.product_id === mus.product_id)
-                  )
+                  !user_updated_stripe_subs.some(us => {
+                    try {
+                      let is_customer_matching = false;
+        
+                      if (us.type === `one_time`) {
+                        is_customer_matching = (us.customer_email === mus.customer_email) || false;
+                      } else if (us.type === `subscription`) {
+                        is_customer_matching = (us.customer_id === mus.customer_id) || false; // note: don't use email to find matching stripe_sub, because a user may have changed their [lefrost product] account's and/or stripe account's email since their stripe_sub first started 
+                      }
+        
+                      return (
+                        is_customer_matching &&
+                        (
+                          (us.type === `one_time`) ?
+                            (us.session_id === mus.session_id) :
+                            true
+                        ) &&
+                        (us.type === mus.type) &&
+                        (us.price_id === mus.price_id) &&
+                        (us.product_id === mus.product_id)
+                      ) || false;
+                    } catch (e) {
+                      console.log(e);
+                      return false;
+                    }
+                  })
                 )
               );
             }
