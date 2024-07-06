@@ -226,10 +226,10 @@ async function del(d) {
 async function refresh() {
   try {
     let deletables = [
-      {
-        id: `io_instance`,
-        timespan_mins: 10,
-      },
+      // {
+      //   id: `io_instance`,
+      //   timespan_mins: 10,
+      // },
     ];
   
     for (let key of Object.keys(cache)) {

@@ -38,7 +38,6 @@ async function getStatStruct(d) {
   }
 }
 
-
 async function getUserStruct(d) {
   try {
     return {
