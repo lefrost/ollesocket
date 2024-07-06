@@ -26,6 +26,8 @@ let util = require(`./utils/util`);
 
 let port = process.env.PORT || 3001;
 let API_KEY = process.env.API_KEY;
+let PROJECT_LINK = process.env.PROJECT_LINK;
+let PROJECT_NAME = process.env.PROJECT_NAME;
 
 let jobs = [];
 let maintenance_timestamp = null;
@@ -70,8 +72,8 @@ const io = require(`socket.io`)(server, {
   // cors: {
   //   origin: [
   //     `http://localhost:3000`,
-  //     `https://www.ollesocket.vercel.app`,
-  //     `https://ollesocket.vercel.app`,
+  //     `https://www.${PROJECT_LINK}`,
+  //     `https://${PROJECT_LINK}`,
   //   ],
   // },
 });
@@ -83,18 +85,19 @@ app.use(function (req, res, next) {
   } else {
     // let auth_origins = [
     //   `http://localhost:3000`,
-    //   `https://www.ollesocket.vercel.app`,
-    //   `https://ollesocket.vercel.app`,
+    //   `https://www.${PROJECT_LINK}`,
+    //   `https://${PROJECT_LINK}`,
     // ];
 
     // Website you wish to allow to connect
     // res.setHeader("Access-Control-Allow-Origin", "*");
-    let origin = req.headers.origin;
+    // let origin = req.headers.origin;
     if (
       // auth_origins.includes(origin) &&
       (util.isEmptyObj(req.body) || [API_KEY, `component`].includes(req.headers.x_api_key)) // note: allow `component` calls to access
     ) {
-      res.setHeader("Access-Control-Allow-Origin", origin);
+      // res.setHeader("Access-Control-Allow-Origin", "origin");
+      res.setHeader("Access-Control-Allow-Origin", "*");
     }
     // Request methods you wish to allow
     res.setHeader(
@@ -114,7 +117,7 @@ app.use(function (req, res, next) {
 });
 
 app.get(`/`, (req, res) => {
-  res.send(`Ollesocket API`);
+  res.send(`${PROJECT_NAME} API`);
 });
 
 io.on(`connection`, (socket) => {
@@ -756,7 +759,7 @@ app.get(`/cache/:type`, async (fe, api) => {
 //             .setAuthor({
 //               name: `Test command`,
 //               iconURL: ``,
-//               url: `https://ollesocket.vercel.app`,
+//               url: `https://${PROJECT_LINK}`,
 //             })
 //             .addFields([
 //               {

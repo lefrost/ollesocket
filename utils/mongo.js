@@ -1,6 +1,7 @@
 const { MongoClient } = require(`mongodb`);
 const uri = process.env.DB_URI;
 const API_TYPE = process.env.API_TYPE;
+const PROJECT_NAME = process.env.PROJECT_NAME;
 
 let util = require("./util");
 
@@ -15,7 +16,7 @@ module.exports = {
   getAll: async (collection_name) => {
     let data = (
       await client
-        .db((API_TYPE === `dev`) ? `ollesocket-dev` : `ollesocket`)
+        .db((API_TYPE === `dev`) ? `${PROJECT_NAME}-dev` : `${PROJECT_NAME}`)
         .collection(collection_name)
         .find()
         .toArray()
@@ -48,7 +49,7 @@ module.exports = {
     }
 
     await client
-      .db((API_TYPE === `dev`) ? `ollesocket-dev` : `ollesocket`)
+      .db((API_TYPE === `dev`) ? `${PROJECT_NAME}-dev` : `${PROJECT_NAME}`)
       .collection(collectionName)
       .find(params, {
         sort: sorters,
@@ -72,7 +73,7 @@ module.exports = {
 
   getOne: async (collectionName, params) => {
     let data = await client
-      .db((API_TYPE === `dev`) ? `ollesocket-dev` : `ollesocket`)
+      .db((API_TYPE === `dev`) ? `${PROJECT_NAME}-dev` : `${PROJECT_NAME}`)
       .collection(collectionName)
       .findOne(params, { collation: { locale: `en`, strength: 2 } });
 
@@ -87,7 +88,7 @@ module.exports = {
     let responseCode = 503;
     try {
       await client
-        .db((API_TYPE === `dev`) ? `ollesocket-dev` : `ollesocket`)
+        .db((API_TYPE === `dev`) ? `${PROJECT_NAME}-dev` : `${PROJECT_NAME}`)
         .collection(collectionName)
         .insertOne(obj);
       responseCode = 201;
@@ -100,7 +101,7 @@ module.exports = {
     let responseCode = 503;
     try {
       await client
-        .db((API_TYPE === `dev`) ? `ollesocket-dev` : `ollesocket`)
+        .db((API_TYPE === `dev`) ? `${PROJECT_NAME}-dev` : `${PROJECT_NAME}`)
         .collection(collectionName)
         .updateOne(idObj, setObj);
       responseCode = 200;
@@ -114,7 +115,7 @@ module.exports = {
 
     try {
       await client
-        .db((API_TYPE === `dev`) ? `ollesocket-dev` : `ollesocket`)
+        .db((API_TYPE === `dev`) ? `${PROJECT_NAME}-dev` : `${PROJECT_NAME}`)
         .collection(collectionName)
         .deleteOne(idObj);
       responseCode = 200;
@@ -128,7 +129,7 @@ module.exports = {
 
     try {
       await client
-        .db((API_TYPE === `dev`) ? `ollesocket-dev` : `ollesocket`)
+        .db((API_TYPE === `dev`) ? `${PROJECT_NAME}-dev` : `${PROJECT_NAME}`)
         .collection(collectionName)
         .deleteMany(idObj);
       responseCode = 200;
@@ -142,7 +143,7 @@ module.exports = {
 
     try {
       await client
-        .db((API_TYPE === `dev`) ? `ollesocket-dev` : `ollesocket`)
+        .db((API_TYPE === `dev`) ? `${PROJECT_NAME}-dev` : `${PROJECT_NAME}`)
         .collection(collectionName)
         .remove();
       responseCode = 200;
@@ -156,7 +157,7 @@ module.exports = {
 
     try {
       count = await client
-        .db((API_TYPE === `dev`) ? `ollesocket-dev` : `ollesocket`)
+        .db((API_TYPE === `dev`) ? `${PROJECT_NAME}-dev` : `${PROJECT_NAME}`)
         .collection(collectionName)
         .find(params, {
           collation: { locale: `en`, strength: 2 },
