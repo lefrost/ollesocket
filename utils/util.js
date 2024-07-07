@@ -557,26 +557,17 @@ module.exports = {
           break;
         }
 
-        case `user_self`: {
-          // note: logged-in user object of itself
-
-          // delete vars
-          
-          delete mapped_item.metadata;
-          delete mapped_item.cache_medata;
-
-          break;
-        }
-        
         case `user`: {
-          // note: public-facing user object
-
           // delete vars
 
-          delete mapped_item.timezone;
-          delete mapped_item.connections;
-          delete mapped_item.stripe_subs;
-          delete mapped_item.settings;
+          if (type === `user`) {
+            // note: logged-in user object of itself
+            delete mapped_item.timezone;
+            delete mapped_item.connections;
+            delete mapped_item.stripe_subs;
+            delete mapped_item.settings;
+          }
+
           delete mapped_item.metadata;
           delete mapped_item.cache_metadata;
 
