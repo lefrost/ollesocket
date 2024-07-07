@@ -539,7 +539,7 @@ module.exports = {
   mapItem: (type, item, arrays, options) => {
     try {
       // note: used to map items from adhoc for processing and/or sending to frontend
-      // note: arrays is retrieved from util->getMapArrays()
+      // note: arrays is retrieved from `adhoc->getMapArrays()`
       // note: options{...}
 
       if (!(
