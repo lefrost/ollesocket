@@ -559,16 +559,18 @@ module.exports = {
 
         case `user`:
         case `user_self`: {
-          // delete vars
-
           if (type === `user`) {
             // note: logged-in user object of itself
+
+            // (self) delete vars
             delete mapped_item.timezone;
             delete mapped_item.connections;
             delete mapped_item.stripe_subs;
             delete mapped_item.settings;
           }
 
+          // delete vars
+          
           delete mapped_item.metadata;
           delete mapped_item.cache_metadata;
 
