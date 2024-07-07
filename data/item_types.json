@@ -1,5 +1,15 @@
 [
   {
+    "code": "stat",
+    "plural_code": "stats",
+    "name": "Stat",
+    "flags": [],
+    "colour": "white",
+    "ident_prop": "id",
+    "search_props": [],
+    "roles": []
+  },
+  {
     "code": "user",
     "plural_code": "users",
     "name": "User",
