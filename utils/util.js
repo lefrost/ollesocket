@@ -552,6 +552,11 @@ module.exports = {
       let mapped_item = module.exports.clone(item);
 
       switch (type) {
+        case `stat`: {
+          // none
+          break;
+        }
+
         case `user_self`: {
           // note: logged-in user object of itself
           delete mapped_item.metadata;
