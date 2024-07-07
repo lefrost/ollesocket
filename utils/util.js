@@ -539,7 +539,7 @@ module.exports = {
   mapItem: (type, item, arrays, options) => {
     try {
       // note: used to map items from adhoc for processing and/or sending to frontend
-      // note: arrays is retrieved from `adhoc->getMapArrays()`
+      // note: arrays is retrieved from adhoc->getMapArrays()
       // note: options{...}
 
       if (!(
@@ -558,6 +558,7 @@ module.exports = {
           delete mapped_item.cache_medata;
           break;
         }
+        
         case `user`: {
           // note: public-facing user object
           delete mapped_item.timezone;
