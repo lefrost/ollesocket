@@ -560,9 +560,7 @@ module.exports = {
         case `user`:
         case `user_self`: {
           if (type === `user`) {
-            // note: logged-in user object of itself
-
-            // (self) delete vars
+            // (public) delete vars
             delete mapped_item.timezone;
             delete mapped_item.connections;
             delete mapped_item.stripe_subs;
