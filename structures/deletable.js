@@ -30,7 +30,7 @@ async function getStatStruct(d) {
     return {
       collection_name: `stats`,
       in_database: true,
-      pullable_attributes: [],
+      pullable_attributes: []
     }
   } catch (e) {
     console.log(e);
@@ -43,7 +43,7 @@ async function getUserStruct(d) {
     return {
       collection_name: `users`,
       in_database: true,
-      pullable_attributes: [],
+      pullable_attributes: []
     }
   } catch (e) {
     console.log(e);

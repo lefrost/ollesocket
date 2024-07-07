@@ -40,8 +40,8 @@ async function getStatStruct(d) {
           `metadata`
         ],
         numerics: [],
-        booleans: [],
-      },
+        booleans: []
+      }
     }
   } catch (e) {
     console.log(e);
@@ -66,8 +66,8 @@ async function getUserStruct(d) {
           `metadata`
         ],
         numerics: [],
-        booleans: [],
-      },
+        booleans: []
+      }
     }
   } catch (e) {
     console.log(e);
