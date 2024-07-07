@@ -567,13 +567,15 @@ module.exports = {
             delete mapped_item.settings;
           }
 
-          // delete vars
-          
-          delete mapped_item.metadata;
-          delete mapped_item.cache_metadata;
-
           break;
         }
+      }
+
+      if (!options.skip_del_metadata_vars) {
+        // delete metadata vars
+
+        delete mapped_item.metadata;
+        delete mapped_item.cache_metadata;
       }
 
       return mapped_item || null;
