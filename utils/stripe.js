@@ -23,7 +23,6 @@ module.exports = {
       if (is_event_parsed) {
         event = req;
       } else {
-        // tba (stripe): error when parsing stripe signature: No webhook payload was provided
         const body = req.body;
         const stripe_signature = req.headers[`stripe-signature`] || ``;
 
