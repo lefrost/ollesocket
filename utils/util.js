@@ -560,6 +560,8 @@ module.exports = {
         case `user_self`: {
           // note: logged-in user object of itself
 
+          // delete vars
+          
           delete mapped_item.metadata;
           delete mapped_item.cache_medata;
 
@@ -568,6 +570,8 @@ module.exports = {
         
         case `user`: {
           // note: public-facing user object
+
+          // delete vars
 
           delete mapped_item.timezone;
           delete mapped_item.connections;
