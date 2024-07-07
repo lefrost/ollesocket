@@ -557,7 +557,8 @@ module.exports = {
           break;
         }
 
-        case `user`: {
+        case `user`:
+        case `user_self`: {
           // delete vars
 
           if (type === `user`) {
