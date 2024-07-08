@@ -27,16 +27,16 @@ async function load(d) {
       //   data = await category_name.load(d);
       //   break;
       // }
+      case `image_edit`: {
+        data = await loadImageEdit(obj);
+        break;
+      }
       case `user_add`: {
         data = await loadUserAdd(obj);
         break;
       }
       case `user_edit`: {
         data = await loadUserEdit(obj);
-        break;
-      }
-      case `user_edit_image`: {
-        data = await loadUserEditImage(obj);
         break;
       }
       case `user_generate_access_token`: {
@@ -66,6 +66,95 @@ async function load(d) {
   } catch (e) {
     console.log(e);
     return util.getRes({ res: `no`, act: `load`, type: d.type, data: null });
+  }
+}
+
+async function loadImageEdit(d) {
+  try {
+    // note: handle resulting image_url based on `d.image_value/image_format<'url', 'base64'>` --- need to call util.imgUrlToBase64() if `d.image_format` is `url`
+
+    let item_type = d.item_type || ``;
+    let item_id = d.item_id || ``;
+    let item_image_prop = d.item_image_prop || ``;
+    let image_directory = d.image_directory || ``;
+    let image_value = d.image_value || ``;
+    let image_format = d.image_format || ``;
+
+    if (!(
+      item_type &&
+      item_id &&
+      item_image_prop &&
+      image_directory &&
+      image_value &&
+      image_format
+    )) {
+      return `error`;
+    }
+
+    let matching_item = await dataflow.get({
+      all: false,
+      type: item_type,
+      id: item_id
+    }) || null;
+
+    if (!(
+      matching_item &&
+      matching_item.id
+    )) {
+      return `error`;
+    }
+
+    let icon_image_base64 = ``;
+
+    if (image_format === `base64`) {
+      icon_image_base64 = image_value || ``;
+    } else if (image_format === `url`) {
+      icon_image_base64 = await util.imgUrlToBase64(image_value) || ``;
+    }
+
+    let icon_image_extension = util.getImageExtensionFromBase64(icon_image_base64) || ``;
+
+    // note: upload image to google cloud, retrieve the resulting image url, and set that image url in mongodb
+
+    let icon_image_url = ``;
+
+    if (icon_image_base64 && icon_image_extension) {
+      icon_image_url = await gcloud.uploadImage(
+        icon_image_base64,
+        icon_image_extension,
+        image_directory,
+        `${item_id}_${util.getTimestamp()}`
+      ) || ``;
+    }
+
+    let edit_obj = {
+      id: item_id
+    }
+
+    edit_obj[item_image_prop] = icon_image_url;
+
+    if (
+      matching_item[item_image_prop] &&
+      !((matching_item.metadata || {}).prev_gcloud_image_urls || []).includes(matching_item[item_image_prop])
+    ) {
+      edit_obj.metadata = {
+        ...(matching_item.metadata || {}),
+        prev_gcloud_image_urls: [
+          ...((matching_item.metadata || {}).prev_gcloud_image_urls || []),
+          matching_item[item_image_prop]
+        ]
+      }
+    }
+
+    await dataflow.edit({
+      type: item_type,
+      obj: edit_obj
+    });
+
+    return `done`;
+  } catch (e) {
+    console.log(e);
+    return `error`;
   }
 }
 
@@ -147,8 +236,11 @@ async function loadUserAdd(d) {
     ) {
       let new_user_c = util.clone(new_user);
 
-      let edit_image_res = await loadUserEditImage({
-        user_id: new_user_c.id,
+      let edit_image_res = await loadImageEdit({
+        item_type: `user`,
+        item_id: new_user_c.id,
+        item_image_prop: `icon_image_url`,
+        image_directory: `user_icons`,
         image_value: icon_image_obj.value,
         image_format: icon_image_obj.format,
       }) || ``;
@@ -309,59 +401,6 @@ async function loadUserLoginByAccessToken(d) {
   } catch (e) {
     console.log(e);
     return null;
-  }
-}
-
-async function loadUserEditImage(d) {
-  try {
-    // note: handle `user.icon_image_url` based on `d.image_value/image_format<'url', 'base64'>` --- need to call util.imgUrlToBase64() if image_format is `url`
-
-    let user_id = d.user_id || ``;
-    let image_value = d.image_value || ``;
-    let image_format = d.image_format || ``;
-    if (!(
-      user_id &&
-      image_value &&
-      image_format
-    )) {
-      return `error`;
-    }
-
-    let icon_image_base64 = ``;
-
-    if (image_format === `base64`) {
-      icon_image_base64 = image_value || ``;
-    } else if (image_format === `url`) {
-      icon_image_base64 = await util.imgUrlToBase64(image_value) || ``;
-    }
-
-    let icon_image_extension = util.getImageExtensionFromBase64(icon_image_base64) || ``;
-
-    // note: upload user's icon image to google cloud, retrieve the resulting image url, and set that image url in mongodb
-
-    let icon_image_url = ``;
-
-    if (icon_image_base64 && icon_image_extension) {
-      icon_image_url = await gcloud.uploadImage(
-        icon_image_base64,
-        icon_image_extension,
-        `user_icons`,
-        `${user_id}_${util.getTimestamp()}`
-      ) || ``;
-    }
-
-    await dataflow.edit({
-      type: `user`,
-      obj: {
-        id: user_id,
-        icon_image_url
-      }
-    });
-
-    return `done`;
-  } catch (e) {
-    console.log(e);
-    return `error`;
   }
 }
 

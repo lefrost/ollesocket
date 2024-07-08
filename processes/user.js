@@ -59,7 +59,6 @@ async function processUsers(d) {
           try {
             // note: process any user.metadata.prev_gcloud_image_urls and exec utils->gcloud.delImage() calls, then wiping user.metadata.prev_gcloud_image_urls clean in mongo
 
-
             if (((user.metadata || {}).prev_gcloud_image_urls || []).length >= 1) {
               let remaining_gcloud_image_urls = user.metadata.prev_gcloud_image_urls.slice() || [];
 
