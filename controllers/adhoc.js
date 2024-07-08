@@ -258,7 +258,7 @@ async function loadUserAdd(d) {
       }
 
       let access_token = await loadUserGenerateAccessToken({
-        user_id: new_user.id
+        user_id: new_user_c.id
       }) || ``;
 
       return {
