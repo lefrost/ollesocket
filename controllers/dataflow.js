@@ -137,12 +137,7 @@ async function edit(d) {
         }
       }
 
-      if (d.obj[`metadata`]) {
-        edits[`metadata`] = {
-          ...(d.obj[`metadata`] || {}),
-          edit_timestamp: util.getTimestamp()
-        }
-      } 
+      edits[`metadata.edit_timestamp`] = util.getTimestamp();
 
       let obj;
 
