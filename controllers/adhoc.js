@@ -287,6 +287,17 @@ async function loadUserEdit(d) {
     )) {
       return null;
     }
+
+    // note: check if user with matching code exists
+
+    let matching_code_user = (arrays[`users`] || {}).find(u =>
+      (util.sanitiseString(u.code) === util.sanitiseString(edit_obj.code)) &&
+      (u.id !== user_id)
+    ) || null;
+    
+    if (matching_code_user && matching_code_user.id) {
+      return null;
+    }
     
     let updated_user = (await dataflow.edit({
       type: `user`,
