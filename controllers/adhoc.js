@@ -290,7 +290,7 @@ async function loadUserEdit(d) {
 
     // note: check if user with matching code exists
 
-    let matching_code_user = (arrays[`users`] || {}).find(u =>
+    let matching_code_user = (arrays[`users`] || []).find(u =>
       (util.sanitiseString(u.code) === util.sanitiseString(edit_obj.code)) &&
       (u.id !== user_id)
     ) || null;
