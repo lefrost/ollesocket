@@ -430,11 +430,11 @@ module.exports = {
     }
   },
 
-  getClientApiRes: (d) => {
+  getClientApiRes: (res, data) => {
     try {
       return {
-        res: d.res || 400,
-        data: d.data || null
+        res: res || 400,
+        data: data || null
       }
     } catch (e) {
       console.log(e);
