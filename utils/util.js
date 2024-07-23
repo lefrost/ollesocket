@@ -430,6 +430,21 @@ module.exports = {
     }
   },
 
+  getClientApiRes: (d) => {
+    try {
+      return {
+        res: d.res || 400,
+        data: d.data || null
+      }
+    } catch (e) {
+      console.log(e);
+      return {
+        status: 400,
+        data: null
+      }
+    }
+  },
+
   getOptionsFromBody: (body) => {
     try {
       return {
