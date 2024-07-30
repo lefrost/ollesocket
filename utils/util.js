@@ -555,7 +555,9 @@ module.exports = {
     try {
       // note: used to map items from adhoc for processing and/or sending to frontend
       // note: arrays is retrieved from adhoc->getMapArrays()
-      // note: options{...}
+      // note: options{avoided_params, ...}
+      
+      let avoided_params = options.avoided_params || [];
 
       if (!(
         type &&
@@ -565,6 +567,12 @@ module.exports = {
       }
 
       let mapped_item = module.exports.clone(item);
+      let keep_params = [];
+      let new_flags = []; // [{param, type, avoided_params, data}]
+      
+      const MATCHING_ITEM_TYPE = ITEM_TYPES.find(T => T.code === (mapped_item.metadata || {}).type) || {}; // note: non-nullable
+      
+      const MATCHING_PARENT_ITEM_TYPE = mapped_item.item_type ? ITEM_TYPES.find(T => T.code === mapped_item.item_type) : null; // note: nullable
 
       switch (type) {
         case `stat`: {
@@ -574,23 +582,98 @@ module.exports = {
 
         case `user`:
         case `user_self`: {
-          if (type === `user`) {
-            // (public) delete vars
-            delete mapped_item.timezone;
-            delete mapped_item.connections;
-            delete mapped_item.stripe_subs;
-            delete mapped_item.settings;
-          }
+          // keep
+          keep_params.push(...[`id`, `code`, `name`, `icon_image_url`]);
+
+          // new
+          // none
+
+          break;
+        }
+
+        case `user_self`: {
+          // keep
+          keep_params.push(...[`id`, `code`, `name`, `icon_image_url`, `timezone`, `connections`, `stripe_subs`, `settings`]);
+
+          // new
+          // none
 
           break;
         }
       }
+      
+      for (let new_flag of new_flags) {
+        if (!avoided_params.includes(new_flag.param)) {
+          if (!new_flag.data) {
+            new_flag.data = {};
+          }
+          
+          let flag_obj;
 
-      if (!options.skip_del_metadata_vars) {
-        // delete metadata vars
+          switch (new_flag.type) {
+            // note: by design, plural flag types should be unique (rather than using a standardised "plural" type), since each plural type is likely to be uniquely nuanced (eg. need unique filter, sorting, etc.)
 
-        delete mapped_item.metadata;
-        delete mapped_item.cache_metadata;
+            case `single`: {
+              /*
+                eg. scenario: get user of comment
+                eg. usage: new_flags.push(...[
+                  {
+                    param: `user`,
+                    type: `single`,
+                    avoided_params: [`comment`, `comments`],
+                    data: {
+                      item_type: `user`,
+                      map_type: `user`,
+                      ident_prop: `id`,
+                      ident_value: mapped_item.user_id
+                    }
+                  }
+                ]);
+              */
+              let item_type = new_flag.data.item_type || ``;
+              let map_type = new_flag.data.map_type || ``;
+              let ident_prop = new_flag.data.ident_prop || `id`;
+              let ident_value = new_flag.data.ident_value || ``;
+            
+              const FLAG_MATCHING_ITEM_TYPE = (item_type ? ITEM_TYPES.find(T => T.code === item_type) : null) || null; // note: nullable
+
+              if (FLAG_MATCHING_ITEM_TYPE) {
+                // get <item>
+                flag_obj = (arrays[FLAG_MATCHING_ITEM_TYPE.plural_code] || []).find(i =>
+                  i[ident_prop] === ident_value
+                ) || null;
+
+                // map <item>
+                flag_obj = module.exports.mapItem(map_type, flag_obj, arrays, {avoided_params: new_flag.avoided_params}) || null;
+              }
+
+              break;
+            }
+            
+            // todo: more flag types
+          }
+
+          if (flag_obj) {
+            mapped_item[new_flag.param] = flag_obj;
+            
+            if (!keep_params.includes(new_flag.param)) {
+              keep_params.push(new_flag.param);
+            }
+          }
+        }
+      }
+
+      for (let param of Object.keys(mapped_item)) {
+        if (
+          !keep_params.includes(param) &&
+          (
+            [`metadata`, `cache_metadata`].includes(param) ?
+              !options.skip_del_metadata_vars :
+              true
+          )
+        ) {
+          delete mapped_item[param];
+        }
       }
 
       return mapped_item || null;
