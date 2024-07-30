@@ -59,11 +59,14 @@ app.use(
 
 const server = app.listen(PORT, async () => {
   console.log(`up on http://localhost:${PORT}`);
-  await mongo.connect();
-  await gcloud.connect();
-  await processes.start({ name: `cache`, payload: {} }); // note: await cache proces before any others
-  processes.start({ name: `stripe_sub`, payload: {} });
-  processes.start({ name: `user`, payload: {} });
+  // await mongo.connect(); // todo: setup mongo
+  // await gcloud.connect(); // todo: setup gcloud
+
+  // todo: activate processes
+  // await processes.start({ name: `cache`, payload: {} }); // note: await cache proces before any others
+  // processes.start({ name: `stripe_sub`, payload: {} });
+  // processes.start({ name: `user`, payload: {} });
+
   // processes.start({ name: `your_object_name`, payload: { /*...*/ } });
 });
 
@@ -815,7 +818,7 @@ app.get(`/cache/:type`, async (fe, api) => {
 
 // app.get(`/test`, async (fe, api) => {
 //   try {
-//     // todo: add any test code here
+//     // add any test code here
 //   } catch (e) {
 //     console.log(e);
 
