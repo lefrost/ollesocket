@@ -611,7 +611,7 @@ module.exports = {
           let flag_obj;
 
           switch (new_flag.type) {
-            // note: by design, plural flag types should be unique (rather than using a standardised "plural" type), since each plural type is likely to be uniquely nuanced (eg. need unique filter, sorting, etc.)
+            // note: by design, plural flag types should be unique (rather than using a standardised "plural" type), since each plural type is likely to be uniquely nuanced (eg. need unique filtering, sorting, etc.)
 
             case `single`: {
               /*
