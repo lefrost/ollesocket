@@ -6,6 +6,8 @@ const GCLOUD_BUCKET_ID = process.env.GCLOUD_BUCKET_ID;
 
 const { Storage } = require('@google-cloud/storage')
 
+const GCLOUD_URL = `https://storage.googleapis.com/`;
+
 // note: in gcloud->bucket->permissions, ensure "public access" is "enabled", ensure "access control" is "ACL", ensure to grant principal "xxx@xxx.iam.gserviceaccount.com" the role of "storage object admin", and ensure to grant principal "allUsers" the role of "storage object viewer"
 
 let gcloud_storage;
@@ -64,7 +66,7 @@ module.exports = {
             console.log(e);
             resolve(null);
           }).on(`finish`, () => {
-            resolve(`https://storage.googleapis.com/${GCLOUD_BUCKET_ID}/${gcloud_file_path}`);
+            resolve(`${GCLOUD_URL}${GCLOUD_BUCKET_ID}/${gcloud_file_path}`);
           });
         }
       } catch (e) {
@@ -80,9 +82,9 @@ module.exports = {
         // note: accept image_url --- will return `done`/`error` depending on if image deletion is successful
         if (
           image_url &&
-          image_url.includes(`https://storage.googleapis.com/${GCLOUD_BUCKET_ID}/`)
+          image_url.includes(`${GCLOUD_URL}${GCLOUD_BUCKET_ID}/`)
         ) {
-          let gcloud_file_path = image_url.replace(`https://storage.googleapis.com/${GCLOUD_BUCKET_ID}/`, ``);
+          let gcloud_file_path = image_url.replace(`${GCLOUD_URL}${GCLOUD_BUCKET_ID}/`, ``);
           let file = gcloud_bucket.file(gcloud_file_path);
           await file.delete();
           resolve(`done`);
