@@ -137,8 +137,6 @@ async function edit(d) {
         }
       }
 
-      edits[`metadata.edit_timestamp`] = util.getTimestamp();
-
       let obj;
 
       if (editable_data.in_database) {
@@ -146,6 +144,13 @@ async function edit(d) {
           editable_data.collection_name,
           { id: d.obj.id },
           { $set: edits, $inc: increments }
+        );
+        
+        // note: update metadata.edit_timestamp separately, to not interfere with any `metadata` obj edit
+        await mongo.updateOne(
+          editable_data.collection_name,
+          { id: d.obj.id },
+          { $set: { "metadata.edit_timestamp": util.getTimestamp() }, $inc: increments }
         );
 
         obj = await mongo.getOne(editable_data.collection_name, {
@@ -162,6 +167,10 @@ async function edit(d) {
             ...matching_obj,
             ...edits,
           };
+
+          if (obj.metadata) {
+            obj.metadata.edit_timestamp = util.getTimestamp();
+          }
         }
       }
 
