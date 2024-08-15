@@ -169,6 +169,7 @@ async function loadUserAdd(d) {
     let timezone = d.timezone || ``;
     let connections = d.connections || [];
     let stripe_subs = d.stripe_subs || [];
+    let honoraries = d.honoraries || [];
     let settings = d.settings || {};
 
     if (!(
@@ -225,6 +226,7 @@ async function loadUserAdd(d) {
         timezone,
         connections,
         stripe_subs,
+        honoraries,
         settings,
       }
     }) || {}).data || null;

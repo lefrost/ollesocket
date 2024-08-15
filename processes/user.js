@@ -104,6 +104,7 @@ async function processUsers(d) {
 
             let user_updated_connections = (user.connections || []).slice() || [];
             let user_updated_stripe_subs = (user.stripe_subs || []).slice() || [];
+            let user_updated_honoraries = (user.honoraries || []).slice() || [];
 
             for (let matching_user of matching_users) {
               let matching_user_c = util.clone(matching_user);
@@ -147,6 +148,14 @@ async function processUsers(d) {
                       return false;
                     }
                   })
+                )
+              );
+
+              user_updated_honoraries.push(
+                ...(matching_user_c.honoraries || []).filter(muh =>
+                  !user_updated_honoraries.some(uh =>
+                    (uh.code === muh.code)
+                  )
                 )
               );
 

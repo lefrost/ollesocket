@@ -62,6 +62,7 @@ async function getUserStruct(d) {
           `timezone`,
           `connections`,
           `stripe_subs`,
+          `honoraries`,
           `settings`,
           `metadata`
         ],

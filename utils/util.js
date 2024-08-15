@@ -580,8 +580,7 @@ module.exports = {
           break;
         }
 
-        case `user`:
-        case `user_self`: {
+        case `user`: {
           // keep
           keep_params.push(...[`id`, `code`, `name`, `icon_image_url`]);
 
@@ -593,7 +592,7 @@ module.exports = {
 
         case `user_self`: {
           // keep
-          keep_params.push(...[`id`, `code`, `name`, `icon_image_url`, `timezone`, `connections`, `stripe_subs`, `settings`]);
+          keep_params.push(...[`id`, `code`, `name`, `icon_image_url`, `timezone`, `connections`, `stripe_subs`, `honoraries`, `settings`]);
 
           // new
           // none
