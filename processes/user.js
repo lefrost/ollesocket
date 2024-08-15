@@ -155,10 +155,8 @@ async function processUsers(d) {
               type: `user`,
               obj: {
                 id: user.id,
-                obj: {
-                  connections: user_updated_connections || [],
-                  stripe_subs: user_updated_stripe_subs || []
-                }
+                connections: user_updated_connections || [],
+                stripe_subs: user_updated_stripe_subs || []
               }
             });
           } catch (e) {

@@ -196,7 +196,9 @@ async function loadUserAdd(d) {
             value: {
               type: connection.type,
               code: connection.code
-            } 
+            },
+            condition: `some`,
+            options: []
           }
         ]
       }) || null;

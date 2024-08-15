@@ -9,6 +9,6 @@
 - use `stripe listen --forward-to localhost:<port>/stripe` in separate terminal to listen to stripe webhook events at `/stripe`.
 - [google cloud](https://cloud.google.com/) integration for file/image storage.
 - grant [`allUsers`](https://cloud.google.com/storage/docs/access-control/making-data-public#buckets) principle the `roles/storage.objectViewer` role for public google cloud bucket. 
-- add [data/gcloud_service_account_key.json](https://dev.to/kamalhossain/upload-file-to-google-cloud-storage-from-nodejs-server-5cdg) file to enable google cloud functions.
+- add [data/gcloud_service_account_key.json](https://console.cloud.google.com/iam-admin/serviceaccounts) ([guide](https://dev.to/kamalhossain/upload-file-to-google-cloud-storage-from-nodejs-server-5cdg)) file to enable google cloud functions.
 - default image file path expected by `utils->gcloud.js` is `<bucket_name>/<prod/dev>/images/<directory_name>`.
 - `env.PORT` is assigned automatically when deployed to heroku, and hence only needs to be declared locally.
