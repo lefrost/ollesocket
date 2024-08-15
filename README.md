@@ -12,3 +12,4 @@
 - add [data/gcloud_service_account_key.json](https://console.cloud.google.com/iam-admin/serviceaccounts) ([guide](https://dev.to/kamalhossain/upload-file-to-google-cloud-storage-from-nodejs-server-5cdg)) file to enable google cloud functions.
 - default image file path expected by `utils->gcloud.js` is `<bucket_name>/<prod/dev>/images/<directory_name>`.
 - `env.PORT` is assigned automatically when deployed to heroku, and hence only needs to be declared locally.
+- designed to be used alongside [ollesvelke](https://github.com/lefrost/ollesvelke) frontend.
