@@ -241,6 +241,33 @@ module.exports = {
       return null;
     }
   },
+
+  shortenString: (data) => {
+    try {
+      if (data.string) {
+        data.string = data.string.toString();
+      }
+    
+      if (!data.left && !data.right) {
+        data.right = true;
+      }
+    
+      if (data.string && data.string.length > data.length) {
+        if (data.left) {
+          return `...${data.string
+            .substring(data.string.length - data.length, data.string.length)
+            .trim()}`;
+        } else if (data.right) {
+          return `${data.string.substring(0, data.length).trim()}...`;
+        }
+      } else {
+        return data.string;
+      }
+    } catch (e) {
+      console.log(e);
+      return ``;
+    }
+  },
   
   stripHtml: (html) => {
     try {
