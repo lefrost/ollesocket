@@ -102,74 +102,76 @@ async function processUsers(d) {
               ((mu.metadata || {}).add_timestamp <= (user.metadata || {}).add_timestamp)
             ).slice() || [];
 
-            let user_updated_connections = (user.connections || []).slice() || [];
-            let user_updated_stripe_subs = (user.stripe_subs || []).slice() || [];
-            let user_updated_honoraries = (user.honoraries || []).slice() || [];
-
-            for (let matching_user of matching_users) {
-              let matching_user_c = util.clone(matching_user);
-
-              user_ids_slated_for_deletion.push(matching_user_c.id);
-
-              user_updated_connections.push(
-                ...(matching_user_c.connections || []).filter(muc =>
-                  !user_updated_connections.some(uc =>
-                    (uc.type === muc.type) &&
-                    (uc.code === muc.code)
+            if (matching_users.length >= 1) {
+              let user_updated_connections = (user.connections || []).slice() || [];
+              let user_updated_stripe_subs = (user.stripe_subs || []).slice() || [];
+              let user_updated_honoraries = (user.honoraries || []).slice() || [];
+  
+              for (let matching_user of matching_users) {
+                let matching_user_c = util.clone(matching_user);
+  
+                user_ids_slated_for_deletion.push(matching_user_c.id);
+  
+                user_updated_connections.push(
+                  ...(matching_user_c.connections || []).filter(muc =>
+                    !user_updated_connections.some(uc =>
+                      (uc.type === muc.type) &&
+                      (uc.code === muc.code)
+                    )
                   )
-                )
-              );
-
-              user_updated_stripe_subs.push(
-                ...(matching_user_c.stripe_subs || []).filter(mus =>
-                  !user_updated_stripe_subs.some(us => {
-                    try {
-                      let is_customer_matching = false;
-        
-                      if (us.type === `one_time`) {
-                        is_customer_matching = (us.customer_email === mus.customer_email) || false;
-                      } else if (us.type === `subscription`) {
-                        is_customer_matching = (us.customer_id === mus.customer_id) || false; // note: don't use email to find matching stripe_sub, because a user may have changed their [lefrost product] account's and/or stripe account's email since their stripe_sub first started 
+                );
+  
+                user_updated_stripe_subs.push(
+                  ...(matching_user_c.stripe_subs || []).filter(mus =>
+                    !user_updated_stripe_subs.some(us => {
+                      try {
+                        let is_customer_matching = false;
+          
+                        if (us.type === `one_time`) {
+                          is_customer_matching = (us.customer_email === mus.customer_email) || false;
+                        } else if (us.type === `subscription`) {
+                          is_customer_matching = (us.customer_id === mus.customer_id) || false; // note: don't use email to find matching stripe_sub, because a user may have changed their [lefrost product] account's and/or stripe account's email since their stripe_sub first started 
+                        }
+          
+                        return (
+                          is_customer_matching &&
+                          (
+                            (us.type === `one_time`) ?
+                              (us.session_id === mus.session_id) :
+                              true
+                          ) &&
+                          (us.type === mus.type) &&
+                          (us.price_id === mus.price_id) &&
+                          (us.product_id === mus.product_id)
+                        ) || false;
+                      } catch (e) {
+                        console.log(e);
+                        return false;
                       }
-        
-                      return (
-                        is_customer_matching &&
-                        (
-                          (us.type === `one_time`) ?
-                            (us.session_id === mus.session_id) :
-                            true
-                        ) &&
-                        (us.type === mus.type) &&
-                        (us.price_id === mus.price_id) &&
-                        (us.product_id === mus.product_id)
-                      ) || false;
-                    } catch (e) {
-                      console.log(e);
-                      return false;
-                    }
-                  })
-                )
-              );
-
-              user_updated_honoraries.push(
-                ...(matching_user_c.honoraries || []).filter(muh =>
-                  !user_updated_honoraries.some(uh =>
-                    (uh.code === muh.code)
+                    })
                   )
-                )
-              );
-
-              // todo: handle any objs associated with to-be-deleted matching_user, and set each's user_id to overriding user's --- required for [add collection names here]
-            }
-
-            await dataflow.edit({
-              type: `user`,
-              obj: {
-                id: user.id,
-                connections: user_updated_connections || [],
-                stripe_subs: user_updated_stripe_subs || []
+                );
+  
+                user_updated_honoraries.push(
+                  ...(matching_user_c.honoraries || []).filter(muh =>
+                    !user_updated_honoraries.some(uh =>
+                      (uh.code === muh.code)
+                    )
+                  )
+                );
+  
+                // todo: handle any objs associated with to-be-deleted matching_user, and set each's user_id to overriding user's --- required for [add collection names here]
               }
-            });
+  
+              await dataflow.edit({
+                type: `user`,
+                obj: {
+                  id: user.id,
+                  connections: user_updated_connections || [],
+                  stripe_subs: user_updated_stripe_subs || []
+                }
+              });
+            }
           } catch (e) {
             console.log(e);
           } finally {
