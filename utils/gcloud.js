@@ -18,7 +18,7 @@ module.exports = {
     try {
       gcloud_storage = new Storage({
         // projectId: GCLOUD_PROJECT_ID, // note: not required
-        keyFilename: `./data/gcloud_service_account_key.json`
+        keyFilename: `./data/gcloud_service_account.json`
       });
 
       gcloud_bucket = gcloud_storage.bucket(GCLOUD_BUCKET_ID);
