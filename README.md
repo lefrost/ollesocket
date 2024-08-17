@@ -10,7 +10,7 @@
 - use `stripe listen --forward-to localhost:<port>/stripe` in separate terminal to listen to stripe webhook events at `/stripe`.
 - [google cloud](https://cloud.google.com/) integration for file/image storage.
 - grant [`allUsers`](https://cloud.google.com/storage/docs/access-control/making-data-public#buckets) principle the `roles/storage.objectViewer` role for public google cloud bucket. 
-- add [`env.GCLOUD_SERVICE_ACCOUNT`](https://dev.to/kamalhossain/upload-file-to-google-cloud-storage-from-nodejs-server-5cdg) to enable google cloud functions, and put prettified JSON in `data/gcloud_service_account.json` for local reference.
+- add one-line JSON [`env.GCLOUD_SERVICE_ACCOUNT`](https://dev.to/kamalhossain/upload-file-to-google-cloud-storage-from-nodejs-server-5cdg) to enable google cloud functions, and put prettified JSON in `data/gcloud_service_account.json` for local reference.
 - default image file path expected by `utils->gcloud.js` is `<bucket_name>/<prod/dev>/images/<directory_name>`.
 - [nodemailer](https://nodemailer.com/) support for sending emails, designed to be used alongside [google workspace](https://blog.shaoula.com/using-nodemailer-with-google-workspace-oauth2-c338834659b2) email address(es). set domain-wide delegation scope to `https://mail.google.com/` to avoid google cloud scope auth error.
 - designed to be used alongside [ollesvelke](https://github.com/lefrost/ollesvelke) frontend.
