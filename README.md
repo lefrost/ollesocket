@@ -12,5 +12,5 @@
 - grant [`allUsers`](https://cloud.google.com/storage/docs/access-control/making-data-public#buckets) principle the `roles/storage.objectViewer` role for public google cloud bucket. 
 - add [data/gcloud_service_account.json](https://console.cloud.google.com/iam-admin/serviceaccounts) ([guide](https://dev.to/kamalhossain/upload-file-to-google-cloud-storage-from-nodejs-server-5cdg)) file to enable google cloud functions.
 - default image file path expected by `utils->gcloud.js` is `<bucket_name>/<prod/dev>/images/<directory_name>`.
-- [nodemailer](https://nodemailer.com/) support for sending emails, designed to be used alongside [google workspace](https://blog.shaoula.com/using-nodemailer-with-google-workspace-oauth2-c338834659b2). set domain-wide delegation scope to `https://mail.google.com/` to avoid google cloud scope auth error.
+- [nodemailer](https://nodemailer.com/) support for sending emails, designed to be used alongside [google workspace](https://blog.shaoula.com/using-nodemailer-with-google-workspace-oauth2-c338834659b2) email address(es). set domain-wide delegation scope to `https://mail.google.com/` to avoid google cloud scope auth error.
 - designed to be used alongside [ollesvelke](https://github.com/lefrost/ollesvelke) frontend.
