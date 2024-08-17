@@ -1000,3 +1000,81 @@ app.get(`/cache/:type`, async (fe, api) => {
 //     console.log(e);
 //   }
 // }
+
+// note: nodemailer testing area
+
+// const nodemailer = require(`nodemailer`);
+// const GCLOUD_SERVICE_ACCOUNT = require(`./data/gcloud_service_account.json`);
+
+// testNodemailer();
+
+// async function testNodemailer() {
+//   try {
+//     const nodemailer_transporter = nodemailer.createTransport({
+//       host: `smtp.gmail.com`,
+//       port: 465,
+//       secure: true,
+//       auth: {
+//        type: `OAuth2`,
+//        user: `noreply@your.website`, // sender address
+//        serviceClient: GCLOUD_SERVICE_ACCOUNT.client_id,
+//        privateKey: GCLOUD_SERVICE_ACCOUNT.private_key,
+//        accessUrl: GCLOUD_SERVICE_ACCOUNT.token_uri,
+//       }
+//     });
+
+//     await nodemailer_transporter.verify();
+  
+//     const nodemailer_options = {
+//       from: `"Your.website" <noreply@your.website>`, // sender address
+//       to: `useremail@gmail.com`, // list of receiver(s), eg. `one@gmail.com, two@gmail.com`
+//       subject: `This is a test email.`, // subject line
+//       // text: ``, // plain text body
+//       html: `
+//         <table
+//           width="100%"
+//           border="0"
+//           cellspacing="0"
+//           cellpadding="0"
+//           style="
+//             width: calc(100% - 20px * 2);
+//             text-align: center;
+//             padding: 20px;
+//             background-color: #f7f7f7;
+//           "  
+//         >
+//           <tr>
+//             <td align="center">
+//               <div
+//                 style="
+//                   width: calc(100% - 20px * 2);
+//                   padding: 20px;
+//                   max-width: calc(500px - 20px * 2);
+//                   background-color: #ffffff;
+//                   font-size: 15px;
+//                   font-family: 'Arial';
+//                   text-align: left;
+//                 "
+//               >
+//                 Hey, user. 👋<br /><br />
+                
+//                 This is a line with <b>important information</b>.<br /><br />
+
+//                 This is another line.<br /><br /><br />
+
+//                 <i style="font-size: 12px;">This is an automated email from <a href="https://lef.la" target="_blank">Lefrost</a>.</i><br /><br />
+
+//                 <i style="font-size: 12px;">You can opt out of notification emails in your <a href="https://lef.la">Settings</a>.</i>
+//               <div>
+//             </td>
+//           </tr>
+//         </table>
+//       ` // html body
+//     }
+  
+//     const nodemailer_info = await nodemailer_transporter.sendMail(nodemailer_options)
+//     console.log(`Message sent: ${nodemailer_info.messageId}`)
+//   } catch (e) {
+//     console.log(e)
+//   }  
+// }
