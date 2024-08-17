@@ -1004,7 +1004,7 @@ app.get(`/cache/:type`, async (fe, api) => {
 // note: nodemailer testing area
 
 // const nodemailer = require(`nodemailer`);
-// const GCLOUD_SERVICE_ACCOUNT = require(`./data/gcloud_service_account.json`);
+// const GCLOUD_SERVICE_ACCOUNT = JSON.parse(process.env.GCLOUD_SERVICE_ACCOUNT);
 
 // testNodemailer();
 

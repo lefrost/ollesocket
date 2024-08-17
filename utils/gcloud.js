@@ -3,6 +3,7 @@ const stream = require('stream');
 const API_TYPE = process.env.API_TYPE;
 const GCLOUD_PROJECT_ID = process.env.GCLOUD_PROJECT_ID;
 const GCLOUD_BUCKET_ID = process.env.GCLOUD_BUCKET_ID;
+const GCLOUD_SERVICE_ACCOUNT = JSON.parse(process.env.GCLOUD_SERVICE_ACCOUNT);
 
 const { Storage } = require('@google-cloud/storage')
 
@@ -18,7 +19,8 @@ module.exports = {
     try {
       gcloud_storage = new Storage({
         // projectId: GCLOUD_PROJECT_ID, // note: not required
-        keyFilename: `./data/gcloud_service_account.json`
+        // keyFilename: `./data/gcloud_service_account.json`
+        credentials: GCLOUD_SERVICE_ACCOUNT
       });
 
       gcloud_bucket = gcloud_storage.bucket(GCLOUD_BUCKET_ID);
