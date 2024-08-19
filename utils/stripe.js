@@ -283,7 +283,6 @@ module.exports = {
             return;
           }
 
-          let updated_user_c = util.clone(updated_user);
           let updated_user_stripe_subs = (updated_user.stripe_subs || []).slice() || [];
           let matching_updated_user_stripe_sub_index = updated_user_stripe_subs.findIndex(s => s.payment_intent_id === session.payment_intent);
 
