@@ -1,7 +1,7 @@
 
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
 const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
-// const STRIPE_PRODUCTS = require(`../data/stripe_products.json`); // todo: define stripe products data for processing
+// const STRIPE_PRODUCTS = require(`../data/stripe_products.json`); // todo: define stripe_products[{id (ie. product_id fron stripe), type}] json data for processing
 
 const stripe = require('stripe')(STRIPE_SECRET_KEY);
 
