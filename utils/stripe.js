@@ -280,6 +280,7 @@ module.exports = {
 
           if (!(updated_user && updated_user.id)) {
             console.log(`stripe.handleEvent - checkout.session.completed - matching user couldn't be updated`);
+            return;
           }
 
           let updated_user_c = util.clone(updated_user);
@@ -288,6 +289,7 @@ module.exports = {
 
           if (matching_updated_user_stripe_sub_index === -1) {
             console.log(`stripe.handleEvent - checkout.session.completed - matching stripe sub in updated user couldn't be found`);
+            return;
           }
 
           if (!updated_user_stripe_subs[matching_updated_user_stripe_sub_index]) {
