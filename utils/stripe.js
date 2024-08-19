@@ -42,6 +42,73 @@ module.exports = {
       }
 
       switch (event.type) {
+        case `charge.refunded`: {
+          const charge = event.data.object || {};
+
+          if (!charge) {
+            console.log(`stripe.handleEvent - charge.refunded - invalid charge`);
+            return;
+          }
+          
+          const payment_intent_id = charge.payment_intent || ``;
+
+          if (!payment_intent_id) {
+            console.log(`stripe.handleEvent - charge.refunded - invalid payment intent ID`);
+            return;
+          }
+
+          let matching_user = await dataflow.get({
+            all: false,
+            type: `user`,
+            filters: [
+              {
+                prop: `stripe_subs`,
+                value: {
+                  payment_intent_id: payment_intent_id
+                },
+                condition: `some`,
+                options: []
+              }
+            ]
+          }) || null;
+
+          if (!(matching_user && matching_user.id)) {
+            console.log(`stripe.handleEvent - charge.refunded - matching user not found`);
+            return;
+          }
+
+          let matching_user_c = util.clone(matching_user);
+
+          let matching_stripe_sub = (matching_user.stripe_subs || []).find(s =>
+            s.payment_intent_id === payment_intent_id
+          ) || null;
+
+          if (!matching_stripe_sub) {
+            console.log(`stripe.handleEvent - charge.refunded - matching stripe sub already removed`);
+          }
+
+          for (let db_item of (matching_stripe_sub.db_items || []).filter(i =>
+            i.type && i.id
+          ) || []) {
+            await dataflow.del({
+              type: db_item.type || ``,
+              id: db_item.id || ``
+            });
+          }
+
+          await dataflow.edit({
+            type: `user`,
+            obj: {
+              id: matching_user_c.id || ``,
+              stripe_subs: (matching_user_c.stripe_subs || []).filter(s =>
+                s.payment_intent_id !== payment_intent_id
+              )
+            }
+          });
+
+          break;
+        }
+
         case `checkout.session.completed`: {
           const session = await stripe.checkout.sessions.retrieve(
             event.data.object.id, { expand: [`line_items`] }
@@ -232,73 +299,6 @@ module.exports = {
           break;
         }
 
-        case `charge.refunded`: {
-          const charge = event.data.object || {};
-
-          if (!charge) {
-            console.log(`stripe.handleEvent - charge.refunded - invalid charge`);
-            return;
-          }
-          
-          const payment_intent_id = charge.payment_intent || ``;
-
-          if (!payment_intent_id) {
-            console.log(`stripe.handleEvent - charge.refunded - invalid payment intent ID`);
-            return;
-          }
-
-          let matching_user = await dataflow.get({
-            all: false,
-            type: `user`,
-            filters: [
-              {
-                prop: `stripe_subs`,
-                value: {
-                  payment_intent_id: payment_intent_id
-                },
-                condition: `some`,
-                options: []
-              }
-            ]
-          }) || null;
-
-          if (!(matching_user && matching_user.id)) {
-            console.log(`stripe.handleEvent - charge.refunded - matching user not found`);
-            return;
-          }
-
-          let matching_user_c = util.clone(matching_user);
-
-          let matching_stripe_sub = (matching_user.stripe_subs || []).find(s =>
-            s.payment_intent_id === payment_intent_id
-          ) || null;
-
-          if (!matching_stripe_sub) {
-            console.log(`stripe.handleEvent - charge.refunded - matching stripe sub already removed`);
-          }
-
-          for (let db_item of (matching_stripe_sub.db_items || []).filter(i =>
-            i.type && i.id
-          ) || []) {
-            await dataflow.del({
-              type: db_item.type || ``,
-              id: db_item.id || ``
-            });
-          }
-
-          await dataflow.edit({
-            type: `user`,
-            obj: {
-              id: matching_user_c.id || ``,
-              stripe_subs: (matching_user_c.stripe_subs || []).filter(s =>
-                s.payment_intent_id !== payment_intent_id
-              )
-            }
-          });
-
-          break;
-        }
-
         case `customer.subscription.deleted`: {
           // note: only meant for `recurring` subscriptions, not `one_time`
 
@@ -406,7 +406,7 @@ module.exports = {
       let timestamp_24h_ago = util.alterTimestamp(`subtract`, 24, `hours`, timestamp);
 
       let latest_events = ((await stripe.events.list({
-        types: [`checkout.session.completed`, `customer.subscription.deleted`],
+        types: [`charge.refunded`, `checkout.session.completed`, `customer.subscription.deleted`],
         limit: 20
       }) || {}).data || []).filter(e =>
         e.type &&
