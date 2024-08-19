@@ -1,6 +1,7 @@
 
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
 const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
+// const STRIPE_PRODUCTS = require(`../data/stripe_products.json`); // todo: define stripe products data for processing
 
 const stripe = require('stripe')(STRIPE_SECRET_KEY);
 
@@ -198,6 +199,7 @@ module.exports = {
                 {
                   session_id: session.id,
                   customer_id: customer_id || ``,
+                  payment_intent_id: session.payment_intent || ``,
                   customer_email: customer_email || ``,
                   price_id: price.id,
                   product_id: product.id,
@@ -205,6 +207,73 @@ module.exports = {
                   timestamp: event.created || util.getTimestamp()
                 }
               ]
+            }
+          });
+
+          break;
+        }
+
+        case `charge.refunded`: {
+          const charge = event.data.object || {};
+
+          if (!charge) {
+            console.log(`stripe.handleEvent - charge.refunded - invalid charge`);
+            return;
+          }
+          
+          const payment_intent_id = charge.payment_intent || ``;
+
+          if (!payment_intent_id) {
+            console.log(`stripe.handleEvent - charge.refunded - invalid payment intent ID`);
+            return;
+          }
+
+          let matching_user = await dataflow.get({
+            all: false,
+            type: `user`,
+            filters: [
+              {
+                prop: `stripe_subs`,
+                value: {
+                  payment_intent_id: payment_intent_id
+                },
+                condition: `some`,
+                options: []
+              }
+            ]
+          }) || null;
+
+          if (!(matching_user && matching_user.id)) {
+            console.log(`stripe.handleEvent - charge.refunded - matching user not found`);
+            return;
+          }
+
+          let matching_user_c = util.clone(matching_user);
+
+          let matching_stripe_sub = (matching_user.stripe_subs || []).find(s =>
+            s.payment_intent_id === payment_intent_id
+          ) || null;
+
+          if (!matching_stripe_sub) {
+            console.log(`stripe.handleEvent - charge.refunded - matching stripe sub already removed`);
+          }
+
+          for (let db_item of (matching_stripe_sub.db_items || []).filter(i =>
+            i.type && i.id
+          ) || []) {
+            await dataflow.del({
+              type: db_item.type || ``,
+              id: db_item.id || ``
+            });
+          }
+
+          await dataflow.edit({
+            type: `user`,
+            obj: {
+              id: matching_user_c.id || ``,
+              stripe_subs: (matching_user_c.stripe_subs || []).filter(s =>
+                s.payment_intent_id !== payment_intent_id
+              )
             }
           });
 
