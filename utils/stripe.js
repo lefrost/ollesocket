@@ -47,14 +47,14 @@ module.exports = {
 
           if (!charge) {
             console.log(`stripe.handleEvent - charge.refunded - invalid charge`);
-            return;
+            break;
           }
           
           const payment_intent_id = charge.payment_intent || ``;
 
           if (!payment_intent_id) {
             console.log(`stripe.handleEvent - charge.refunded - invalid payment intent ID`);
-            return;
+            break;
           }
 
           let matching_user = await dataflow.get({
@@ -74,7 +74,7 @@ module.exports = {
 
           if (!(matching_user && matching_user.id)) {
             console.log(`stripe.handleEvent - charge.refunded - matching user not found`);
-            return;
+            break;
           }
 
           let matching_user_c = util.clone(matching_user);
@@ -126,7 +126,7 @@ module.exports = {
             session.line_items.data[0].price.product
           )) {
             console.log(`stripe.handleEvent - checkout.session.completed - invalid session`);
-            return;
+            break;
           }
 
           const price_id = session.line_items.data[0].price.id;
@@ -135,7 +135,7 @@ module.exports = {
 
           if (![`one_time`, `recurring`].includes(price_type)) {
             console.log(`stripe.handleEvent - checkout.session.completed - unsupported price type`);
-            return;
+            break;
           }
 
           let customer_id = ``;
@@ -149,7 +149,7 @@ module.exports = {
               one_time_customer_details.email
             )) {
               console.log(`stripe.handleEvent - checkout.session.completed - invalid one-time subscription customer details`);
-              return;
+              break;
             }
 
             customer_id = ``; // note: empty
@@ -163,7 +163,7 @@ module.exports = {
               recurring_subscription_customer.email
             )) {
               console.log(`stripe.handleEvent - checkout.session.completed - invalid recurring subscription customer`);
-              return;
+              break;
             }
 
             customer_id = recurring_subscription_customer.id;
@@ -183,7 +183,7 @@ module.exports = {
             )
           )) {
             console.log(`stripe.handleEvent - checkout.session.completed - invalid customer`);
-            return;
+            break;
           }
 
           const price = await stripe.prices.retrieve(price_id);
@@ -193,7 +193,7 @@ module.exports = {
             price.id
           )) {
             console.log(`stripe.handleEvent - checkout.session.completed - invalid price`);
-            return;
+            break;
           }
 
           const product = await stripe.products.retrieve(product_id);
@@ -203,7 +203,7 @@ module.exports = {
             product.id
           )) {
             console.log(`stripe.handleEvent - checkout.session.completed - invalid product`);
-            return;
+            break;
           }
           
           let matching_user = await dataflow.get({
@@ -227,7 +227,7 @@ module.exports = {
             matching_user.id
           )) {
             console.log(`stripe.handleEvent - checkout.session.completed - no matching user found`);
-            return;
+            break;
           } else if ((matching_user.stripe_subs || []).some(s => {
             try {
               let is_price_type_valid = false;
@@ -254,7 +254,7 @@ module.exports = {
             }
           })) {
             console.log(`stripe.handleEvent - checkout.session.completed - matching user stripe_sub already added`);
-            return;
+            break;
           }
       
           let updated_user = (await dataflow.edit({
@@ -280,7 +280,7 @@ module.exports = {
 
           if (!(updated_user && updated_user.id)) {
             console.log(`stripe.handleEvent - checkout.session.completed - matching user couldn't be updated`);
-            return;
+            break;
           }
 
           let updated_user_stripe_subs = (updated_user.stripe_subs || []).slice() || [];
@@ -288,7 +288,7 @@ module.exports = {
 
           if (matching_updated_user_stripe_sub_index === -1) {
             console.log(`stripe.handleEvent - checkout.session.completed - matching stripe sub in updated user couldn't be found`);
-            return;
+            break;
           }
 
           if (!updated_user_stripe_subs[matching_updated_user_stripe_sub_index]) {
@@ -313,7 +313,7 @@ module.exports = {
             subscription.items.data
           )) {
             console.log(`stripe.handleEvent - customer.subscription.deleted - invalid subscription (might not be a "recurring" subscription type)`);
-            return;
+            break;
           }
 
           const subscription_items = subscription.items.data.filter(i => 
@@ -325,7 +325,7 @@ module.exports = {
 
           if (subscription_items.length === 0) {
             console.log(`stripe.handleEvent - customer.subscription.deleted - invalid subscription item(s)`);
-            return;
+            break;
           }
 
           let prices = [];
@@ -338,7 +338,7 @@ module.exports = {
 
           if (prices.length === 0) {
             console.log(`stripe.handleEvent - customer.subscription.deleted - invalid price(s)`);
-            return;
+            break;
           }
 
           let matching_user = await dataflow.get({
@@ -362,7 +362,7 @@ module.exports = {
             matching_user.id
           )) {
             console.log(`stripe.handleEvent - checkout.session.deleted - no matching user with recurring stripe_sub(s) found`);
-            return;
+            break;
           } else if (!(matching_user.stripe_subs || []).some(s =>
             (s.customer_id === subscription.customer) &&
             prices.some(p =>
@@ -372,7 +372,7 @@ module.exports = {
             (s.timestamp <= event.created) // note: only del matching stripe subs that were created *before* the "del" event
           )) {
             console.log(`stripe.handleEvent - checkout.session.deleted - matching user stripe_sub already deleted`);
-            return;
+            break;
           }
 
           await dataflow.edit({
