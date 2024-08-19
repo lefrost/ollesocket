@@ -44,8 +44,41 @@ async function processStripeSubs(d) {
       a.created - b.created // note: sort in ascending order
     );
 
-    latest_process_timestamp = util.getTimestamp();
+    latest_stripe_events = latest_stripe_events.filter(e => {
+      try {
+        // note: filter out `checkout.session.completed` events with matching `charge.refunded` events after it, and `charge.refunded` events with matching `checkout.session.completed` events before it --- `customer.subscription.deleted` (for recurring payments) checking for this currently not supported here
+        
+        if (![`charge.refunded`, `checkout.session.completed`].includes(e.type)) {
+          return true;
+        }
 
+        if (e.type === `charge.refunded`) {
+          let matching_checkout_events_before = latest_stripe_events.filter(ce =>
+            (ce.type === `checkout.session.completed`) &&
+            ((ce.data.object || {}).payment_intent === (e.data.object || {}).payment_intent) &&
+            (ce.created < e.created)
+          ).slice() || [];
+          
+          return (matching_checkout_events_before.length === 0);
+        } else if (e.type === `checkout.session.completed`) {
+          let matching_refund_events_after = latest_stripe_events.filter(re =>
+            (re.type === `charge.refunded`) &&
+            ((re.data.object || {}).payment_intent === (e.data.object || {}).payment_intent) &&
+            (re.created >= e.created)
+          ).slice() || [];
+          
+          return (matching_refund_events_after.length === 0);
+        }
+
+        return true; // note: default
+      } catch (e) {
+        console.log(e);
+        return false;
+      }
+    }) || [];
+
+    latest_process_timestamp = util.getTimestamp();
+    
     for (let event of latest_stripe_events) {
       await stripe.handleEvent(event, true);
     }

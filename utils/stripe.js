@@ -73,7 +73,7 @@ module.exports = {
           }) || null;
 
           if (!(matching_user && matching_user.id)) {
-            console.log(`stripe.handleEvent - charge.refunded - matching user not found`);
+            console.log(`stripe.handleEvent - charge.refunded - matching user not found (may be attempting to refund+remove purchase that has already been processed previously)`);
             break;
           }
 
