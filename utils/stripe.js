@@ -190,7 +190,7 @@ module.exports = {
             return;
           }
       
-          await dataflow.edit({
+          let updated_user = (await dataflow.edit({
             type: `user`,
             obj: {
               id: matching_user.id,
@@ -204,11 +204,30 @@ module.exports = {
                   price_id: price.id,
                   product_id: product.id,
                   type: price_type,
-                  timestamp: event.created || util.getTimestamp()
+                  db_items: [], // note: edit to fill later in this function, depending on matching STRIPE_PRODUCT
+                  timestamp: event.created || null
                 }
               ]
             }
-          });
+          })).data || null;
+
+          if (!(updated_user && updated_user.id)) {
+            console.log(`stripe.handleEvent - checkout.session.completed - matching user couldn't be updated`);
+          }
+
+          let updated_user_c = util.clone(updated_user);
+          let updated_user_stripe_subs = (updated_user.stripe_subs || []).slice() || [];
+          let matching_updated_user_stripe_sub_index = updated_user_stripe_subs.findIndex(s => s.payment_intent_id === session.payment_intent);
+
+          if (matching_updated_user_stripe_sub_index === -1) {
+            console.log(`stripe.handleEvent - checkout.session.completed - matching stripe sub in updated user couldn't be found`);
+          }
+
+          if (!updated_user_stripe_subs[matching_updated_user_stripe_sub_index]) {
+            updated_user_stripe_subs[matching_updated_user_stripe_sub_index].db_items = [];
+          }
+
+          // todo: process new checkout accordingly based on associated STRIPE_PRODUCT, and update matching stripe sub's db_items if needed
 
           break;
         }
