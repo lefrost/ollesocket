@@ -7,7 +7,7 @@
 - [mongo](https://mongodb.com/atlas/database) database, [discord.js](https://discordjs.guide) integration, alternative support for rest endpoints.
 - [puppeteer](https://pptr.dev) support, [buildpack](https://github.com/jontewks/puppeteer-heroku-buildpack) for usage on heroku. [alternative solution](https://stackoverflow.com/a/74858297/8919391) for smaller slug size.
 - [stripe](https://stripe.com) integration and webhook for subscriptions.
-- use `stripe listen --forward-to localhost:<port>/stripe` in separate terminal to listen to stripe webhook events at `/stripe`.
+- in separate terminal, do `stripe login --api-key <stripe-test-mode-secret-key>` and `stripe listen --forward-to localhost:<port>/stripe` to listen to stripe webhook events at `/stripe`.
 - [google cloud](https://cloud.google.com/) integration for file/image storage.
 - grant [`allUsers`](https://cloud.google.com/storage/docs/access-control/making-data-public#buckets) principle the `roles/storage.objectViewer` role for public google cloud bucket. 
 - add one-line JSON [`env.GCLOUD_SERVICE_ACCOUNT`](https://dev.to/kamalhossain/upload-file-to-google-cloud-storage-from-nodejs-server-5cdg) to enable google cloud functions, and put prettified JSON in `data/gcloud_service_account.json` for local reference.
