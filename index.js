@@ -816,6 +816,67 @@ app.get(`/cache/:type`, async (fe, api) => {
   }
 });
 
+app.get(`/add_user_honorary`, async (fe, api) => {
+  try {
+    let key = fe.query.key || ``;
+    let user_id = fe.query.user_id || ``;
+    let code = fe.query.code || ``;
+
+    if (key !== API_KEY) {
+      api.send({
+        data: `wrong key`
+      });
+    } else {
+      let matching_user = await dataflow.get({
+        all: false,
+        type: `user`,
+        id: user_id || ``
+      }) || null;
+
+      if (!(matching_user && matching_user.id)) {
+        api.send({
+          data: `error: user not found`
+        });
+      } else {
+        let matching_user_c = util.clone(matching_user);
+
+        let new_honorary;
+
+        switch (code) {
+          // todo: add honorary obj{code, data{...}} based on code
+        }
+
+        if (!new_honorary) {
+          api.send({
+            data: `error: new honorary unable to be built`
+          });
+        } else {
+          await dataflow.edit({
+            type: `user`,
+            obj: {
+              id: matching_user_c.id || ``,
+              honoraries: [
+                ...(matching_user_c.honoraries || []),
+                new_honorary
+              ]
+            }
+          });
+        }
+        
+        api.send({
+          data: `done`
+        });
+      }
+    }
+  } catch (e) {
+    console.log(e);
+
+    api.send({
+      data: `error: ${e}`
+    });
+  }
+});
+
 // app.get(`/test`, async (fe, api) => {
 //   try {
 //     // add any test code here
