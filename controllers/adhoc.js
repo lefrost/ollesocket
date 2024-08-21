@@ -332,7 +332,7 @@ async function loadUserEdit(d) {
 
     if ((Object.keys(edit_obj.settings || {}).length >= 1)) {
       for (let key of Object.keys(edit_obj.settings || {})) {
-        edit_settings_obj[key] = (edit_obj.settings || {})[settings_notifications_emails_frequency_hours] || null;
+        edit_settings_obj[key] = (edit_obj.settings || {})[key] || null;
       }
     }
 
