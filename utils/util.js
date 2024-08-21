@@ -564,7 +564,7 @@ module.exports = {
       }
 
       if ([`user`].includes(type)) {
-        metadata_obj[`prev_gcloud_image_urls`] = []
+        metadata_obj[`prev_gcloud_image_urls`] = [];
       }
 
       if ([`user`].includes(type)) {

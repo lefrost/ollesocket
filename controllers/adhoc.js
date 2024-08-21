@@ -160,7 +160,7 @@ async function loadImageEdit(d) {
 
 async function loadUserAdd(d) {
   try {
-    var arrays = await getMapArrays() || {};
+    let arrays = await getMapArrays() || {};
 
     const ENFORCE_EMAIL_SIGNUP_ONLY = true;
 
@@ -218,7 +218,6 @@ async function loadUserAdd(d) {
     }
 
     let new_user = (await dataflow.add({
-      url: `add`,
       type: `user`,
       obj: {
         name,
@@ -231,15 +230,15 @@ async function loadUserAdd(d) {
       }
     }) || {}).data || null;
 
+    if (!(new_user && new_user.id)) return null;
+    
+    let new_user_c = util.clone(new_user);
+
     if (
-      new_user &&
-      new_user.id &&
       icon_image_obj &&
       icon_image_obj.value &&
       icon_image_obj.format
     ) {
-      let new_user_c = util.clone(new_user);
-
       let edit_image_res = await loadImageEdit({
         item_type: `user`,
         item_id: new_user_c.id,
@@ -247,30 +246,29 @@ async function loadUserAdd(d) {
         image_directory: `user_icons`,
         image_value: icon_image_obj.value,
         image_format: icon_image_obj.format,
+        prev_image_value: ``
       }) || ``;
 
       if (edit_image_res === `done`) {
         let updated_user = await dataflow.get({
           all: false,
           type: `user`,
-          id: new_user.id || ``,
+          id: new_user_c.id || ``,
         }) || null;
 
         if (updated_user && updated_user.id) {
           new_user = util.clone(updated_user);
         }
       }
+    }
 
-      let access_token = await loadUserGenerateAccessToken({
-        user_id: new_user_c.id
-      }) || ``;
+    let access_token = await loadUserGenerateAccessToken({
+      user_id: new_user_c.id
+    }) || ``;
 
-      return {
-        ...util.mapItem(`user_self`, new_user, arrays, {}),
-        access_token_string: access_token.split(`_`)[1] || ``
-      }
-    } else {
-      return null;
+    return {
+      ...util.mapItem(`user_self`, new_user, arrays, {}),
+      access_token_string: access_token.split(`_`)[1] || ``
     }
   } catch (e) {
     console.log(e);
@@ -280,28 +278,59 @@ async function loadUserAdd(d) {
 
 async function loadUserEdit(d) {
   try {
-    var arrays = await getMapArrays() || {};
+    let arrays = await getMapArrays() || {};
 
     let user_id = d.user_id || ``;
     let edit_obj = d.edit_obj || {};
 
+    // check vars
+
     if (!(
       user_id &&
-      edit_obj
+      edit_obj &&
+      edit_obj.code &&
+      edit_obj.name
     )) {
       return null;
     }
+
+    // note: get matching user
+
+    let matching_user = (arrays[`users`] || []).find(u => 
+      u.id === user_id
+    ) || null;
+
+    if (!(matching_user && matching_user.id)) {
+      return null;
+    }
+
+    let matching_user_c = util.clone(matching_user);
 
     // note: check if user with matching code exists
 
     let matching_code_user = (arrays[`users`] || []).find(u =>
       (util.sanitiseString(u.code) === util.sanitiseString(edit_obj.code)) &&
-      (u.id !== user_id)
+      (u.id !== matching_user.id)
     ) || null;
     
     if (matching_code_user && matching_code_user.id) {
       return null;
     }
+
+    // note: handle possible edit_obj.icon_image_obj
+
+    let icon_image_obj;
+    
+    if (
+      edit_obj.icon_image_obj &&
+      edit_obj.icon_image_obj.value &&
+      edit_obj.icon_image_obj.format
+    ) {
+      icon_image_obj = util.clone(edit_obj.icon_image_obj);
+      delete edit_obj.icon_image_obj;
+    }
+
+    // note: edit user
     
     let updated_user = (await dataflow.edit({
       type: `user`,
@@ -311,10 +340,36 @@ async function loadUserEdit(d) {
       }
     }) || {}).data || null;
 
-    if (!(updated_user && updated_user.id)) {
-      return null;
-    }
+    if (!(updated_user && updated_user.id)) return null;
+    
+    let updated_user_c = util.clone(updated_user);
 
+    // note: edit user's icon image if icon_image_obj is present
+
+    if (icon_image_obj) {
+      let edit_image_res = await loadImageEdit({
+        item_type: `user`,
+        item_id: updated_user_c.id,
+        item_image_prop: `icon_image_url`,
+        image_directory: `user_icons`,
+        image_value: icon_image_obj.value,
+        image_format: icon_image_obj.format,
+        prev_image_value: (matching_user_c.icon_image_url || ``).trim() || ``
+      }) || ``;
+  
+      if (edit_image_res === `done`) {
+        let updated_image_user = await dataflow.get({
+          all: false,
+          type: `user`,
+          id: updated_user_c.id || ``,
+        }) || null;
+  
+        if (updated_image_user && updated_image_user.id) {
+          updated_user = util.clone(updated_image_user);
+        }
+      }
+    }
+    
     return util.mapItem(`user_self`, updated_user, arrays, {}) || null;
   } catch (e) {
     console.log(e);
