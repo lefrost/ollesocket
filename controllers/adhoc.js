@@ -326,6 +326,23 @@ async function loadUserEdit(d) {
       delete edit_obj.icon_image_obj;
     }
 
+    // parse settings if any
+
+    let edit_settings_obj = {};
+
+    if ((Object.keys(edit_obj.settings || {}).length >= 1)) {
+      for (let key of Object.keys(edit_obj.settings || {})) {
+        edit_settings_obj[key] = (edit_obj.settings || {})[settings_notifications_emails_frequency_hours] || null;
+      }
+    }
+
+    if (Object.keys(edit_settings_obj || {}).length >= 1) {
+      edit_obj[`settings`] = {
+        ...(matching_user_c.settings || {}),
+        ...edit_settings_obj
+      }
+    }
+
     // note: edit user
     
     let updated_user = (await dataflow.edit({
