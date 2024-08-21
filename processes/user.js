@@ -160,7 +160,7 @@ async function processUsers(d) {
             //       ` // html body
             //     }
               
-            //     // const nodemailer_info = await nodemailer_transporter.sendMail(nodemailer_options)
+            //     const nodemailer_info = await nodemailer_transporter.sendMail(nodemailer_options)
             //     // console.log(`Message sent: ${nodemailer_info.messageId}`);
             //   } catch (er) {
             //     console.log(er)
