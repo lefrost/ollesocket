@@ -79,6 +79,7 @@ async function loadImageEdit(d) {
     let image_directory = d.image_directory || ``;
     let image_value = d.image_value || ``;
     let image_format = d.image_format || ``;
+    let prev_image_value = d.prev_image_value || ``; // note: optional
 
     if (!(
       item_type &&
@@ -133,23 +134,18 @@ async function loadImageEdit(d) {
 
     edit_obj[item_image_prop] = icon_image_url;
 
-    if (
-      matching_item[item_image_prop] &&
-      !((matching_item.metadata || {}).prev_gcloud_image_urls || []).includes(matching_item[item_image_prop])
-    ) {
-      edit_obj.metadata = {
-        ...(matching_item.metadata || {}),
-        prev_gcloud_image_urls: [
-          ...((matching_item.metadata || {}).prev_gcloud_image_urls || []),
-          matching_item[item_image_prop]
-        ]
-      }
-    }
-
     await dataflow.edit({
       type: item_type,
       obj: edit_obj
     });
+
+    if (prev_image_value) {
+      await loadPrevImageHandle({
+        item_type,
+        item_id,
+        prev_image_value
+      });
+    }
 
     return `done`;
   } catch (e) {
@@ -368,6 +364,12 @@ async function loadUserEdit(d) {
           updated_user = util.clone(updated_image_user);
         }
       }
+    } else if (edit_obj.icon_image_url === ``) {
+      await loadPrevImageHandle({
+        item_type: `user`,
+        item_id: updated_user_c.id,
+        prev_image_value: (matching_user_c.icon_image_url || ``).trim() || ``
+      });
     }
     
     return util.mapItem(`user_self`, updated_user, arrays, {}) || null;
@@ -525,5 +527,50 @@ async function getMapArrays() {
   } catch (e) {
     console.log(e);
     return {};
+  }
+}
+
+async function loadPrevImageHandle(d) {
+  try {
+    let item_type = d.item_type || ``;
+    let item_id = d.item_id || ``;
+    let prev_image_value = d.prev_image_value || ``;
+
+    if (!(
+      item_type &&
+      item_id &&
+      prev_image_value
+    )) {
+      return `error`;
+    }
+
+    let edit_obj = {
+      id: item_id
+    }
+
+    edit_obj[item_image_prop] = icon_image_url;
+
+    if (
+      prev_image_value &&
+      !((matching_item.metadata || {}).prev_gcloud_image_urls || []).includes(prev_image_value)
+    ) {
+      edit_obj.metadata = {
+        ...(matching_item.metadata || {}),
+        prev_gcloud_image_urls: [
+          ...((matching_item.metadata || {}).prev_gcloud_image_urls || []),
+          prev_image_value
+        ]
+      }
+    }
+
+    await dataflow.edit({
+      type: item_type,
+      obj: edit_obj
+    });
+
+    return `done`;
+  } catch (e) {
+    console.log(e);
+    return `error`;
   }
 }
