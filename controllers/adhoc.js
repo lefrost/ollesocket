@@ -548,8 +548,6 @@ async function loadPrevImageHandle(d) {
       id: item_id
     }
 
-    edit_obj[item_image_prop] = icon_image_url;
-
     if (
       prev_image_value &&
       !((matching_item.metadata || {}).prev_gcloud_image_urls || []).includes(prev_image_value)
