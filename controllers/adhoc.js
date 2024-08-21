@@ -544,6 +544,19 @@ async function loadPrevImageHandle(d) {
       return `error`;
     }
 
+    let matching_item = await dataflow.get({
+      all: false,
+      type: item_type,
+      id: item_id
+    }) || null;
+
+    if (!(
+      matching_item &&
+      matching_item.id
+    )) {
+      return `error`;
+    }
+
     let edit_obj = {
       id: item_id
     }
