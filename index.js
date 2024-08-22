@@ -821,6 +821,7 @@ app.get(`/add_user_honorary`, async (fe, api) => {
     let key = fe.query.key || ``;
     let user_id = fe.query.user_id || ``;
     let code = fe.query.code || ``;
+    let note = fe.query.note || ``;
 
     if (key !== API_KEY) {
       api.send({
@@ -843,7 +844,15 @@ app.get(`/add_user_honorary`, async (fe, api) => {
         let new_honorary;
 
         switch (code) {
-          // todo: add honorary obj{code, data{...}} based on code
+          case `pro`: {
+            new_honorary = {
+              code: `pro`,
+              data: {
+                note
+              }
+            }
+            break;
+          }
         }
 
         if (!new_honorary) {
