@@ -1098,7 +1098,6 @@ app.get(`/add_user_honorary`, async (fe, api) => {
 //           cellspacing="0"
 //           cellpadding="0"
 //           style="
-//             width: calc(100% - 20px * 2);
 //             text-align: center;
 //             padding: 20px;
 //             background-color: #f7f7f7;
@@ -1108,9 +1107,9 @@ app.get(`/add_user_honorary`, async (fe, api) => {
 //             <td align="center">
 //               <div
 //                 style="
-//                   width: calc(100% - 20px * 2);
-//                   padding: 20px;
-//                   max-width: calc(500px - 20px * 2);
+//                   width: 92%;
+//                   padding: 4%;
+//                   max-width: 450px;
 //                   background-color: #ffffff;
 //                   font-size: 15px;
 //                   font-family: 'Arial';
