@@ -14,7 +14,7 @@ let util = require("../utils/util");
 module.exports = {
   handleEvent: async (req, is_event_parsed) => {
     try {
-      // note: `is_event_parsed` param refers to whether `req` (ie. `fe`) param is an entire POST request, or if it's an already-parsed stripe event, in which case `let event = stripe.webhooks.constructEvent(...)` can be skipped and just instead do `let event = breqody`
+      // note: `is_event_parsed` param refers to whether `req` (ie. `fe`) param is an entire POST request, or if it's an already-parsed stripe event, in which case `let event = stripe.webhooks.constructEvent(...)` can be skipped and just instead do `let event = req.body`
 
       if (!req) {
         console.log(`stripe.handleEvent - invalid req`);
