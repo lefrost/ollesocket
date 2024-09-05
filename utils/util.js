@@ -602,6 +602,8 @@ module.exports = {
       const MATCHING_PARENT_ITEM_TYPE = mapped_item.item_type ? ITEM_TYPES.find(T => T.code === mapped_item.item_type) : null; // note: nullable
 
       switch (type) {
+        // todo: more item types
+
         case `stat`: {
           // none
           break;
