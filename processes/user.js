@@ -185,6 +185,7 @@ async function processUsers(d) {
               let user_updated_connections = (user.connections || []).slice() || [];
               let user_updated_stripe_subs = (user.stripe_subs || []).slice() || [];
               let user_updated_honoraries = (user.honoraries || []).slice() || [];
+              // let user_updated_nft_cxs = (user.nft_cxs || []).slice() || [];
   
               for (let matching_user of matching_users) {
                 let matching_user_c = util.clone(matching_user);
@@ -238,6 +239,34 @@ async function processUsers(d) {
                     )
                   )
                 );
+
+                // for (let nft_cx of (matching_user.nft_cxs || []).slice()) {
+                //   let nft_cx_index = (user_updated_nft_cxs || []).findIndex(c =>
+                //     c.code === nft_cx.code
+                //   );
+  
+                //   if (nft_cx_index === -1) {
+                //     user_updated_nft_cxs.push({
+                //       code: nft_cx.code || ``,
+                //       chain: nft_cx.chain || ``,
+                //       nfts: []
+                //     });
+                //   }
+                  
+                //   nft_cx_index = (user_updated_nft_cxs || []).findIndex(c =>
+                //     c.code === nft_cx.code
+                //   );
+  
+                //   if (nft_cx_index >= 0) {
+                //     user_updated_nft_cxs[nft_cx_index].nfts.push(
+                //       ...(nft_cx.nfts || []).filter(mn =>
+                //         !(user_updated_nft_cxs[nft_cx_index].nfts || []).some(un =>
+                //           un.addy === mn.addy
+                //         )
+                //       ) || []
+                //     );
+                //   }
+                // }
   
                 // todo: handle any objs associated with to-be-deleted matching_user, and set each's user_id to overriding user's --- required for [add collection names here]
               }
@@ -247,7 +276,9 @@ async function processUsers(d) {
                 obj: {
                   id: user.id,
                   connections: user_updated_connections || [],
-                  stripe_subs: user_updated_stripe_subs || []
+                  stripe_subs: user_updated_stripe_subs || [],
+                  honoraries: user_updated_honoraries || [],
+                  // nft_cxs: user_updated_nft_cxs || []
                 }
               });
             }
