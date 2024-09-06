@@ -61,7 +61,7 @@ async function getUserStruct(d) {
       connections: d.connections || [], // [{type<`email`, `discord`, `solana`, `suave`, ...>, code, name}]
       stripe_subs: d.stripe_subs || [], // [{session_id?, customer_id?, payment_intent_id, customer_email, price_id, product_id, type<`one_time`, `subscription`>, db_items[{type, id}], timestamp}]
       honoraries: d.honoraries || [], // [{code, data{...(depends on code)}}] --- note: honorary statuses/subs, eg. give pro sub for free to dev 
-      // nft_cxs: d.nft_cxs || [], // [{code, nfts[{addy, wallet_addy, name, image_url, metadata_url}]]
+      // nft_cxs: d.nft_cxs || [], // [{code, chain<`solana`, ...>, nfts[{addy, wallet_addy, name, image_url, metadata_url}]]
       // servers: d.servers || [], // [{id, type<`admin`, `staff`, `member`, `none`>}]
       settings: d.settings || {}, // {...}
       metadata: d.metadata || util.getStructMetadataObj(`user`, util.getTimestamp())
