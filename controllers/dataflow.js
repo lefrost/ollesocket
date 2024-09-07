@@ -232,7 +232,7 @@ async function pull(d) {
         }
       }
 
-      let matches = (await getMany({ type: d.type, filters })).data;
+      let matches = (await getMany({ type: d.type, filters }) || {}).data;
 
       for (let match of matches) {
         if (deletable_data.in_database) {

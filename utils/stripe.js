@@ -278,7 +278,7 @@ module.exports = {
                 }
               ]
             }
-          })).data || null;
+          }) || {}).data || null;
 
           if (!(updated_user && updated_user.id)) {
             console.log(`stripe.handleEvent - checkout.session.completed - matching user couldn't be updated`);
