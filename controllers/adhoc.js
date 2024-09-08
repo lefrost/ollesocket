@@ -602,3 +602,45 @@ async function loadPrevImageHandle(d) {
     return `error`;
   }
 }
+
+async function delAssociatedItems(parent_item_type, parent_item_ident_value, keys, arrays) {
+  try {
+    if (!(parent_item_type && parent_item_ident_value && keys && arrays)) return;
+
+    for (let key of keys) {
+      const MATCHING_ITEM_TYPE = ITEM_TYPES.find(T => T.code === key) || null;
+  
+      if (MATCHING_ITEM_TYPE) {
+        for (let item of (arrays[MATCHING_ITEM_TYPE.plural_code] || []).filter(i => {
+          try {
+            switch (MATCHING_ITEM_TYPE.code) {
+              // todo: item types
+
+              // case `votes`: {
+              //   if (parent_item_type === `user`) {
+              //     return (i.user_id === parent_item_ident_value) || false;
+              //   } else {
+              //     return false;
+              //   }
+              // }
+              
+              default: {
+                return false;
+              }
+            }
+          } catch (e) {
+            console.log(e);
+            return false;
+          }
+        }).slice()) {
+          await dataflow.del({
+            type: MATCHING_ITEM_TYPE.code || ``,
+            id: item.id || ``
+          });
+        }
+      }
+    }
+  } catch (e) {
+    console.log(e);
+  }
+}
