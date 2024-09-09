@@ -203,40 +203,19 @@ io.on(`connection`, (socket) => {
       else if (!processes.init().cache) {
         callback(util.getWaitCacheRes());
       } else {
-        if (d.is_cache_request && !util.isEmptyObj(d.cache_get_params)) {
-          // console.log(`------------------- initial data`);
-          // console.log(d);
-  
-          let cache_obj = await dataflow.get(d.cache_get_params);
-  
-          callback(cache_obj);
-  
-          // console.log(`------------------- cache obj`);
-          // console.log(cache_obj);
-  
-          let updated_obj = await adhoc.load(d);
-  
-          // console.log(`------------------- load params`);
-          // console.log(d);
-  
-          if (!util.isEmptyObj(updated_obj)) {
-            await dataflow.add({
-              type: d.type,
-              obj: updated_obj.data,
-            });
-  
-            cache_obj = await dataflow.get(d.cache_get_params);
-  
-            // console.log(`------------------- updated obj`);
-            // console.log(updated_obj);
-  
-            // console.log(`------------------- new cache obj`);
-            // console.log(cache_obj);
-  
-            socket.emit(`new_load_${d.type}`, cache_obj);
-          }
-        } else {
-          callback(await adhoc.load(d));
+        let load_res = await adhoc.load(d);
+
+        callback(load_res);
+
+        if (load_res && load_res.socket_emit_obj) {
+          // note: socket can emit 3 event types: `load` (user-triggered adhoc event), `exec` (user-triggered non-adhoc event, eg. send lounge message), and `process` (system-triggered event)
+          socket.emit(
+            `load`, // note: this socket emit is to handle `load` type events, ie. user-triggered adhoc events
+            { // payload
+              type: d.type || ``,
+              data: load_res.socket_emit_obj
+            }
+          );
         }
       }
     } catch (e) {
