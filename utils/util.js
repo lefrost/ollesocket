@@ -23,9 +23,9 @@ module.exports = {
     }
   },
   
-  generateAccessToken: () => {
+  generateAccessToken: (access_token_string) => {
     try {
-      return `${module.exports.getTimestamp()}_${module.exports.generateId(20)}`;
+      return `${module.exports.getTimestamp()}_${access_token_string || module.exports.generateId(20)}`;
     } catch (e) {
       console.log(e);
       return ``;

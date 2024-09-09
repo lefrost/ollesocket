@@ -155,6 +155,8 @@ async function loadImageEdit(d) {
 }
 
 async function loadUserAdd(d) {
+  // returns obj - no socket_emit_obj
+
   try {
     let arrays = await getMapArrays() || {};
 
@@ -180,7 +182,7 @@ async function loadUserAdd(d) {
           : true
       )
     )) {
-      return null;
+      return { error: `Invalid vars` };
     }
     
     for (let connection of connections.slice()) {
@@ -207,7 +209,7 @@ async function loadUserAdd(d) {
         }) || ``;
 
         return {
-          ...util.mapItem(`user_self`, matching_user, arrays, {}),
+          user: util.mapItem(`user_self`, matching_user, arrays, {}),
           access_token_string: access_token.split(`_`)[1] || ``
         }
       }
@@ -226,7 +228,7 @@ async function loadUserAdd(d) {
       }
     }) || {}).data || null;
 
-    if (!(new_user && new_user.id)) return null;
+    if (!(new_user && new_user.id)) return { error: `User could not be added` };
     
     let new_user_c = util.clone(new_user);
 
@@ -263,16 +265,18 @@ async function loadUserAdd(d) {
     }) || ``;
 
     return {
-      ...util.mapItem(`user_self`, new_user, arrays, {}),
+      user: util.mapItem(`user_self`, new_user, arrays, {}),
       access_token_string: access_token.split(`_`)[1] || ``
-    }
+    } || { error: `Unknown error` };
   } catch (e) {
     console.log(e);
-    return null;
+    return { error: `Unknown error` };
   }
 }
 
 async function loadUserEdit(d) {
+  // returns obj - has socket_emit_obj
+
   try {
     let arrays = await getMapArrays() || {};
 
@@ -287,7 +291,7 @@ async function loadUserEdit(d) {
       edit_obj.code &&
       edit_obj.name
     )) {
-      return null;
+      return { error: `Invalid vars` };
     }
 
     // note: get matching user
@@ -297,7 +301,7 @@ async function loadUserEdit(d) {
     ) || null;
 
     if (!(matching_user && matching_user.id)) {
-      return null;
+      return { error: `Matching user not found` };
     }
 
     let matching_user_c = util.clone(matching_user);
@@ -310,7 +314,7 @@ async function loadUserEdit(d) {
     ) || null;
     
     if (matching_code_user && matching_code_user.id) {
-      return null;
+      return { error: `User handle already in use` };
     }
 
     // note: handle possible edit_obj.icon_image_obj
@@ -353,7 +357,7 @@ async function loadUserEdit(d) {
       }
     }) || {}).data || null;
 
-    if (!(updated_user && updated_user.id)) return null;
+    if (!(updated_user && updated_user.id)) return { error: `User could not be edited` };
     
     let updated_user_c = util.clone(updated_user);
 
@@ -389,19 +393,27 @@ async function loadUserEdit(d) {
       });
     }
     
-    return util.mapItem(`user_self`, updated_user, arrays, {}) || null;
+    return {
+      user: util.mapItem(`user_self`, updated_user, arrays, {}),
+      socket_emit_obj: {
+        user: util.mapItem(`user`, updated_user, arrays, {}), // note: map item with public-facing `user` type here, instead of `user_self`
+      }
+     } || { error: `Unknown error` };
   } catch (e) {
     console.log(e);
-    return null;
+    return { error: `Unknown error` };
   }
 }
 
 async function loadUserGenerateAccessToken(d) {
   try {
+    // returns obj - no socket_emit_obj
+
     let user_id = d.user_id || ``;
+    let access_token_string = d.access_token_string || ``; // format: 20-char string --- note: optional, pass value in certain scenarios, eg. for logging in inside component: generate access token in component, and pass value into this function, so when user authorises from website and socket emits access token, it can be compared against the previously generated access token, and thus login inside component can be authorised
 
     if (!user_id) {
-      return ``;
+      return { error: `Invalid vars` };
     }
 
     let matching_user = await dataflow.get({
@@ -411,7 +423,7 @@ async function loadUserGenerateAccessToken(d) {
     }) || null;
 
     if (!(matching_user && matching_user.id)) {
-      return ``;
+      return { error: `Matching user not found` };
     }
 
     let matching_user_c = util.clone(matching_user);
@@ -422,25 +434,27 @@ async function loadUserGenerateAccessToken(d) {
         id: matching_user_c.id,
         metadata: {
           ...matching_user_c.metadata,
-          access_token: util.generateAccessToken() || ``
+          access_token: util.generateAccessToken(access_token_string || ``) || ``
         }
       }
     }) || {}).data || null;
 
     if (!(updated_user && updated_user.id)) {
-      return ``;
+      return { error: `Matching user couldn't be updated` };
     }
 
     // note: return access_token_string, rather than entire access_token, given that access_token format is `<access_token_timestamp>_<access_token_string>`
-    return (updated_user.metadata || {}).access_token || ``;
+    return { access_token: (updated_user.metadata || {}).access_token || `` } || { error: `Unknown error` };
   } catch (e) {
     console.log(e);
-    return ``;
+    return { error: `Unknown error` };
   }
 }
 
 async function loadUserLoginByAccessToken(d) {
   try {
+    // returns obj - has socket_emit_obj (optional, only received if function called through socket, to facilitate eg. login flow from inside component)
+
     var arrays = await getMapArrays() || {};
 
     let user_id = d.user_id || ``;
@@ -450,7 +464,7 @@ async function loadUserLoginByAccessToken(d) {
       user_id &&
       access_token_string
     )) {
-      return null;
+      return { error: `Invalid vars` };
     }
 
     let matching_user = await dataflow.get({
@@ -463,33 +477,52 @@ async function loadUserLoginByAccessToken(d) {
       matching_user &&
       matching_user.id
     ) {
-      let access_token = (matching_user.metadata || {}).access_token || ``;
+      let matching_user_c = util.clone(matching_user);
 
-      if (!access_token) {
+      let existing_access_token = (matching_user_c.metadata || {}).access_token || ``;
+
+      if (!existing_access_token) {
         return null;
       }
 
-      let access_token_frags = access_token.split(`_`) || [];
-      let access_token_timestamp = access_token_frags[0] || null;
-      let access_token_string = access_token_frags[1] || ``;
+      await dataflow.edit({
+        type: `user`,
+        obj: {
+          id: matching_user_c.id || ``,
+          metadata: {
+            ...(matching_user_c.metadata || {}),
+            access_token: `` // note: reset access token once used
+          }
+        }
+      });
 
-      let seconds_since_token_timestamp = util.getTimestampDiff(access_token_timestamp, util.getTimestamp(), `seconds`);
+      let existing_access_token_frags = existing_access_token.split(`_`) || [];
+      let existing_access_token_timestamp = existing_access_token_frags[0] || null;
+      let existing_access_token_string = existing_access_token_frags[1] || ``;
+
+      let seconds_since_token_timestamp = util.getTimestampDiff(existing_access_token_timestamp, util.getTimestamp(), `seconds`);
 
       if (
         (seconds_since_token_timestamp >= 0) &&
-        (seconds_since_token_timestamp <= 30) &&
-        (access_token_string === access_token_string)
+        (seconds_since_token_timestamp <= 60) &&
+        (existing_access_token_string === access_token_string)
       ) {
-        return util.mapItem(`user_self`, matching_user, arrays, {});
+        return {
+          user: util.mapItem(`user_self`, matching_user, arrays, {}),
+          socket_emit_obj: {
+            user: util.mapItem(`user_self`, matching_user, arrays, {}),
+            access_token_string: access_token_string || ``
+          }
+        }
       } else {
-        return null;
+        return { error: `Access token expired` };
       }
     } else {
-      return null;
+      return { error: `Matching user not found` };
     }
   } catch (e) {
     console.log(e);
-    return null;
+    return { error: `Unknown error` };
   }
 }
 
