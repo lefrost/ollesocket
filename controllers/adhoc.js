@@ -71,6 +71,8 @@ async function load(d) {
 
 async function loadImageEdit(d) {
   try {
+    // returns `done` || `error` - no socket_emit_obj
+
     // note: handle resulting image_url based on `d.image_value/image_format<'url', 'base64'>` --- need to call util.imgUrlToBase64() if `d.image_format` is `url`
 
     let item_type = d.item_type || ``;
@@ -105,24 +107,24 @@ async function loadImageEdit(d) {
       return `error`;
     }
 
-    let icon_image_base64 = ``;
+    let image_base64 = ``;
 
     if (image_format === `base64`) {
-      icon_image_base64 = image_value || ``;
+      image_base64 = image_value || ``;
     } else if (image_format === `url`) {
-      icon_image_base64 = await util.imgUrlToBase64(image_value) || ``;
+      image_base64 = await util.imgUrlToBase64(image_value) || ``;
     }
 
-    let icon_image_extension = util.getImageExtensionFromBase64(icon_image_base64) || ``;
+    let image_extension = util.getImageExtensionFromBase64(image_base64) || ``;
 
     // note: upload image to google cloud, retrieve the resulting image url, and set that image url in mongodb
 
-    let icon_image_url = ``;
+    let image_url = ``;
 
-    if (icon_image_base64 && icon_image_extension) {
-      icon_image_url = await gcloud.uploadImage(
-        icon_image_base64,
-        icon_image_extension,
+    if (image_base64 && image_extension) {
+      image_url = await gcloud.uploadImage(
+        image_base64,
+        image_extension,
         image_directory,
         `${item_id}_${util.getTimestamp()}`
       ) || ``;
@@ -132,7 +134,7 @@ async function loadImageEdit(d) {
       id: item_id
     }
 
-    edit_obj[item_image_prop] = icon_image_url;
+    edit_obj[item_image_prop] = image_url;
 
     await dataflow.edit({
       type: item_type,
