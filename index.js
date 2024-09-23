@@ -207,13 +207,13 @@ io.on(`connection`, (socket) => {
 
         callback(load_res);
 
-        if (load_res && load_res.socket_emit_obj) {
+        if (load_res && load_res.data && load_res.data.socket_emit_obj) {
           // note: socket can emit 3 event types: `load` (user-triggered adhoc event), `exec` (user-triggered non-adhoc event, eg. send lounge message), and `process` (system-triggered event)
           socket.emit(
             `load`, // note: this socket emit is to handle `load` type events, ie. user-triggered adhoc events
             { // payload
               type: d.type || ``,
-              data: load_res.socket_emit_obj
+              data: load_res.data.socket_emit_obj
             }
           );
         }
