@@ -182,7 +182,7 @@ io.on(`connection`, (socket) => {
   //     if (processes.init().cache) {
   //       let new_obj = await dataflow.add(d);
   
-  //       socket.emit(
+  //       io.emit(
   //         `new_instance_update`,
   //         await dataflow.getMany({
   //           type: `io_instance`,
@@ -210,7 +210,7 @@ io.on(`connection`, (socket) => {
 
         if (load_res && load_res.data && load_res.data.socket_emit_obj) {
           // note: socket can emit 3 event types: `load` (user-triggered adhoc event), `exec` (user-triggered non-adhoc event, eg. send lounge message), and `process` (system-triggered event)
-          socket.emit(
+          io.emit(
             `load`, // note: this socket emit is to handle `load` type events, ie. user-triggered adhoc events
             { // payload
               type: d.type || ``,
