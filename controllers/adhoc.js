@@ -206,9 +206,9 @@ async function loadUserAdd(d) {
 
       if (matching_user && matching_user.id) {
         // note: if matching user already exists, simply use the existing matching user , and don't add any new user
-        let access_token = await loadUserGenerateAccessToken({
-          user_id: matching_user.id
-        }) || ``;
+        let access_token = (await loadUserGenerateAccessToken({
+          user_id: util.clone(matching_user.id) || ``,
+        }) || {}).access_token || ``;
 
         return {
           user: util.mapItem(`user_self`, matching_user, arrays, {}),
@@ -262,9 +262,9 @@ async function loadUserAdd(d) {
       }
     }
 
-    let access_token = await loadUserGenerateAccessToken({
-      user_id: new_user_c.id
-    }) || ``;
+    let access_token = (await loadUserGenerateAccessToken({
+      user_id: new_user_c.id || ``
+    }) || {}).access_token || ``;
 
     return {
       user: util.mapItem(`user_self`, new_user, arrays, {}),
