@@ -25,7 +25,7 @@ let stripe = require(`./utils/stripe`);
 let util = require(`./utils/util`);
 
 let PORT = process.env.PORT || 3001;
-let FRONTEND_PORT = process.env.FRONTEND_PORT || 3000;
+let FE_PORT = process.env.FE_PORT || 3000;
 let API_KEY = process.env.API_KEY;
 let PROJECT_LINK = process.env.PROJECT_LINK;
 let PROJECT_NAME = process.env.PROJECT_NAME;
@@ -75,7 +75,7 @@ const server = app.listen(PORT, async () => {
 const io = require(`socket.io`)(server, {
   cors: {
     origin: [
-      `http://localhost:${FRONTEND_PORT}`,
+      `http://localhost:${FE_PORT}`,
       `https://www.${PROJECT_LINK}`,
       `https://${PROJECT_LINK}`,
     ],
