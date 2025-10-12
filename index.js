@@ -165,10 +165,10 @@ io.on(`connection`, (socket) => {
   //     // { user_id, page_code }
   //     // io.emit(`connect`, d);
   //     // callback(
-  //     //   process.init().cache ?
+  //     //   processes.init().cache ?
   //     // )
   
-  //     if (process.init().cache) {
+  //     if (processes.init().cache) {
   //       io.emit(`connect_res`, await dataflow.add(d));
   //     }
   //   } catch (e) {
