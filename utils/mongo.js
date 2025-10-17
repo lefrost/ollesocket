@@ -19,17 +19,28 @@ module.exports = {
 
   getAll: async (collection_name) => {
     try {
-      let data = (
-        await client
-          .db((API_TYPE === `dev`) ? `${PROJECT_NAME}-dev` : `${PROJECT_NAME}`)
-          .collection(collection_name)
-          .find()
-          .toArray()
-      ).map((d) => {
-        delete d._id;
-        return d;
-      });
-  
+      let cursor = client
+        .db((API_TYPE === `dev`) ? `${PROJECT_NAME}-dev` : `${PROJECT_NAME}`)
+        .collection(collection_name)
+        .find({}, { projection: { _id: 0 } });
+      
+      let data = [];
+
+      for await (const doc of cursor) {
+        data.push(doc);
+      }
+
+      // let data = (
+      //   await client
+      //     .db((API_TYPE === `dev`) ? `${PROJECT_NAME}-dev` : `${PROJECT_NAME}`)
+      //     .collection(collection_name)
+      //     .find()
+      //     .toArray()
+      // ).map((d) => {
+      //   delete d._id;
+      //   return d;
+      // });
+
       return data;
     } catch (e) {
       console.log(e);
